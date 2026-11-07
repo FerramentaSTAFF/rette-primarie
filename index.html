@@ -93,6 +93,7 @@ table.grid{border-collapse:separate;border-spacing:0;width:max-content;min-width
 .grid .name{position:sticky;left:0;background:var(--surface);text-align:left;z-index:1;min-width:130px;max-width:170px;border-right:1px solid var(--line)}
 .grid thead .name{z-index:2}
 .grid .name button{all:unset;cursor:pointer;font-weight:700;display:block;overflow-wrap:anywhere}
+.grid .name button+button{margin-top:2px}
 .grid .name small{display:block;color:var(--muted);font-weight:400}
 .grid th.now{color:var(--accent)}
 .cell{width:48px;height:44px;border-radius:9px;border:1px solid var(--line);background:var(--bg);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:700;line-height:1.05;padding:0;margin:auto}
@@ -426,11 +427,14 @@ function vTutti(){
   '<div class="row" style="flex-wrap:nowrap"><input type="search" id="cerca" placeholder="Cerca nome" value="'+esc(filtro)+'"><select id="classe" style="width:auto"><option value="">Tutte le classi</option>'+classi.map(c=>'<option'+(c===filtroClasse?' selected':'')+'>'+esc(c)+'</option>').join('')+'</select></div>'+
   '<div class="legend"><span class="pill pagato">✓ Pagato</span><span class="pill scaduto">! Scaduto</span><span class="pill corrente">Da pagare</span><span class="pill esente">– Non dovuto</span><span class="pill ecc">Importo diverso</span></div>'+
   (lista.length?'<div class="gridwrap"><table class="grid"><thead><tr><th class="name">Bambino</th>'+mm.map(mo=>'<th class="'+(mc&&mo.key===mc.key?'now':'')+'">'+mo.breve+'</th>').join('')+'<th>Resta</th></tr></thead><tbody>'+
-  lista.map(b=>'<tr><td class="name"><button data-open="'+b.id+'">'+esc(b.nome)+'</button><small>'+esc(b.classe||'')+(b.esente?' · agevolazione':' · '+eur(quotaBase(b)))+(b.allergie?' · <span style="color:var(--late)">allergie</span>':'')+(b.famiglia&&famiglia(b).length>1?' · fratelli':'')+'</small></td>'+
-    mm.map(mo=>{const st=stato(b,mo),d=dovuto(b,mo),e=hasEcc(b,mo)&&!b.esente;
+  raggruppa(lista).map(g=>{const M=g.membri,b=g.b;
+    return'<tr><td class="name">'+M.map(x=>'<button data-open="'+x.id+'">'+esc(x.nome)+'</button>').join('')+'<small>'+(M.length>1?'fratelli · '+eur(M.reduce((t,x)=>t+(x.esente?0:quotaBase(x)),0))+' insieme':esc(b.classe||'')+(b.esente?' · agevolazione':' · '+eur(quotaBase(b))))+(M.some(x=>x.allergie)?' · <span style="color:var(--late)">allergie</span>':'')+'</small></td>'+
+    mm.map(mo=>{const sts=M.map(x=>stato(x,mo)),d=famDov(M,mo),e=M.some(x=>(hasEcc(x,mo)&&!x.esente)||(x.noteMese&&x.noteMese[mo.key]));
+      const vivi=sts.filter(x=>x!=='esente');
+      const st=!vivi.length?'esente':vivi.every(x=>x==='pagato')?'pagato':['scaduto','corrente','futuro'].find(x=>vivi.includes(x))||'pagato';
       const sym=st==='pagato'?'✓':st==='scaduto'?'!':st==='esente'?'–':'';
-      return'<td><button class="cell '+st+(e||(b.noteMese&&b.noteMese[mo.key])?' ecc':'')+'" data-pay="'+b.id+'|'+mo.key+'" aria-label="'+esc(b.nome)+', '+mo.nome+': '+ETI[st]+', '+eur(d)+'">'+sym+(d>0?'<small>'+Math.round(d)+'€</small>':'')+'</button></td>';}).join('')+
-    '<td><strong>'+eur(totali(b).res)+'</strong></td></tr>').join('')+'</tbody></table></div>'+
+      return'<td><button class="cell '+st+(e?' ecc':'')+'" data-pay="'+b.id+'|'+mo.key+'" aria-label="'+esc(g.nome)+', '+mo.nome+': '+ETI[st]+', '+eur(d)+'">'+sym+(d>0?'<small>'+Math.round(d)+'€</small>':'')+'</button></td>';}).join('')+
+    '<td><strong>'+eur(M.reduce((t,x)=>t+totali(x).res,0))+'</strong></td></tr>';}).join('')+'</tbody></table></div>'+
   '<p class="small muted">Tocca un mese per segnarlo pagato (o toglierlo). Il giorno viene salvato e lo vedi nella scheda del bambino.</p>'
   :'<p class="empty">Nessun bambino trovato.</p>')+
   '<div class="row"><button class="btn primary" data-act="report">Riepilogo anno · PDF / stampa</button><button class="btn" data-act="add">Aggiungi bambino</button></div>';
