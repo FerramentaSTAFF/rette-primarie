@@ -487,7 +487,8 @@ function vAltro(){
   '<p class="small muted" style="margin:0">Quando inizia il nuovo anno basta cambiare l’anno qui: i bambini restano, i mesi ripartono da zero e quelli vecchi restano salvati.</p></section>'+
   '<section class="card"><div class="row spread"><h2>Classi</h2><button class="btn primary" data-act="classe">+ Crea classe</button></div>'+
   (()=>{const cl={};S.bambini.forEach(b=>{if(b.classe)cl[b.classe]=(cl[b.classe]||0)+1;});const k=Object.keys(cl).sort((a,b)=>a.localeCompare(b,'it',{numeric:true}));const senza=S.bambini.filter(b=>!b.classe).length;
-    return(k.length?'<ul class="list">'+k.map(c=>'<li><span><strong>'+esc(c)+'</strong> <span class="small muted">'+cl[c]+' bambini</span></span><button class="btn" data-classe="'+esc(c)+'">Modifica</button></li>').join('')+'</ul>':'<p class="small muted" style="margin:0">Nessuna classe ancora. Creane una e seleziona i bambini che ne fanno parte.</p>')+(senza&&k.length?'<p class="small muted" style="margin:0">'+senza+' bambini senza classe.</p>':'');})()+'</section>'+
+    return(k.length?'<ul class="list">'+k.map(c=>'<li style="display:block"><div class="row spread"><span><strong>'+esc(c)+'</strong> <span class="small muted">'+cl[c]+(cl[c]===1?' bambino':' bambini')+'</span></span><div class="row"><button class="btn ghost" data-vedicl="'+esc(c)+'">'+(clAperte.has(c)?'Nascondi alunni':'Visualizza alunni')+'</button><button class="btn" data-classe="'+esc(c)+'">Modifica</button></div></div>'+
+      (clAperte.has(c)?'<ol class="small" style="margin:8px 0 0;padding-left:22px;display:flex;flex-direction:column;gap:4px">'+ordinati().filter(x=>x.classe===c).map(x=>'<li><button class="btn ghost" style="padding:0;min-height:0;font-size:inherit;color:var(--ink);text-align:left" data-open="'+x.id+'">'+esc(x.nome)+'</button></li>').join('')+'</ol>':'')+'</li>').join('')+'</ul>':'<p class="small muted" style="margin:0">Nessuna classe ancora. Creane una e seleziona i bambini che ne fanno parte.</p>')+(senza&&k.length?'<p class="small muted" style="margin:0">'+senza+' bambini senza classe.</p>':'');})()+'</section>'+
   '<section class="card"><h2>Servizi e prezzi</h2><p class="small muted" style="margin:0">La quota di ogni bambino è la somma dei suoi servizi, a meno che tu non scriva una quota personalizzata nella sua scheda.</p>'+
   '<ul class="list">'+S.servizi.map(s=>'<li><input type="text" data-snome="'+s.id+'" value="'+esc(s.nome)+'" style="flex:2;width:auto" aria-label="Nome servizio"><input type="number" data-scosto="'+s.id+'" value="'+s.costo+'" min="0" step="0.01" inputmode="decimal" style="flex:1;width:auto;max-width:110px" aria-label="Prezzo mensile"><button class="btn ghost" data-delserv="'+s.id+'">Elimina</button></li>').join('')+'</ul>'+
   '<form id="formServ" class="row" style="flex-wrap:nowrap"><input type="text" id="nsNome" placeholder="Nuovo servizio" autocomplete="off" style="flex:2"><input type="number" id="nsCosto" placeholder="€/mese" min="0" step="0.01" inputmode="decimal" style="flex:1;max-width:110px"><button class="btn primary" type="submit">Aggiungi</button></form></section>'+
@@ -614,6 +615,7 @@ $('#formCons').addEventListener('submit',e=>{e.preventDefault();
   save();$('#dlgCons').close();render();toast((consId?'Consegna aggiornata. ':'Consegna registrata: −'+eur(imp)+'. ')+'In cassa: '+eur(saldo()));});
 
 /* ---------- classi ---------- */
+let clAperte=new Set();
 let clOrig=null,clSel=new Set(),clSoloSenza=false;
 function drawClasse(){
   const q=$('#clCerca').value.trim().toLowerCase();
@@ -682,8 +684,9 @@ function importa(file){
 document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{tab=t.dataset.tab;render();scrollTo(0,0);});
 const app=$('#app');
 app.addEventListener('click',e=>{
-  const t=e.target.closest('[data-pay],[data-open],[data-act],[data-delnote],[data-delserv],[data-editcons],[data-classe]');if(!t)return;
+  const t=e.target.closest('[data-pay],[data-open],[data-act],[data-delnote],[data-delserv],[data-editcons],[data-classe],[data-vedicl]');if(!t)return;
   if(t.dataset.classe){openClasse(t.dataset.classe);return;}
+  if(t.dataset.vedicl){const c=t.dataset.vedicl;clAperte.has(c)?clAperte.delete(c):clAperte.add(c);render();return;}
   if(t.dataset.editcons){openCons(t.dataset.editcons);return;}
   if(t.dataset.pay){const[id,k]=t.dataset.pay.split('|');const b=S.bambini.find(x=>x.id===id),mo=mesi().find(m=>m.key===k);if(b&&mo)togglePay(b,mo);return;}
   if(t.dataset.open){selId=t.dataset.open;tab='bambino';render();scrollTo(0,0);return;}
