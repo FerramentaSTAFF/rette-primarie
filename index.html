@@ -11,7 +11,7 @@
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}[hidden]{display:none!important}img{max-width:100%}</style>
-<title>Pagamenti Bambini</title>
+<title>Pagamenti e Mensa</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
@@ -116,7 +116,7 @@ table.grid{border-collapse:separate;border-spacing:0;width:max-content;min-width
 .paybox{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.7rem;color:var(--muted)}
 .paybox input{width:28px;height:28px}
 /* barra schede */
-nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:5;background:var(--surface);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:5;background:var(--surface);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
 .tab{all:unset;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;padding:9px 4px 10px;font-size:.75rem;font-weight:700;color:var(--muted);position:relative}
 .tab svg{width:24px;height:24px}
 .tab[aria-selected="true"]{color:var(--accent)}
@@ -185,6 +185,126 @@ dialog form{padding:18px;display:flex;flex-direction:column;gap:12px}
   .rep .tw{overflow:visible}
 }
 @media (prefers-reduced-motion:no-preference){.cell,.btn{transition:background-color .15s,border-color .15s}}
+.mz button,.mz input,.mz select,.mz textarea{font:inherit;color:inherit}
+.mz h1,.mz h2,.mz h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.15}
+.mz h2{font-size:1.15rem}
+.mz .eyebrow{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.mz .card{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:0 2px 0 var(--line);padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.mz .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.mz .spread{justify-content:space-between}
+.mz .muted{color:var(--muted)}
+.mz .small{font-size:.85rem}
+.mz .btn{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 14px;cursor:pointer;font-weight:700;font-size:.9rem;min-height:40px}
+.mz .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.mz .btn.danger{color:var(--late);border-color:var(--late)}
+.mz .btn.ghost{border-color:transparent;background:transparent;color:var(--accent)}
+.mz .btn.sm{min-height:34px;padding:5px 11px;font-size:.82rem}
+.mz input[type=text],.mz input[type=number],.mz input[type=date],.mz select,.mz textarea{border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:9px 11px;min-height:42px;width:100%;min-width:0}
+.mz textarea{min-height:80px;resize:vertical}
+.mz .f{display:flex;flex-direction:column;gap:4px;font-size:.85rem;color:var(--muted);font-weight:700;min-width:0;flex:1}
+.mz label.chk{display:flex;gap:8px;align-items:center;cursor:pointer}
+.mz input[type=checkbox]{width:22px;height:22px;accent-color:var(--accent)}
+.mz .mstats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.mz .mstat{border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:2px;min-width:0;background:var(--sky-soft)}
+.mz .mstat b{font-family:var(--f-display);font-size:1.6rem;line-height:1.1}
+.mz .mstat.big{background:var(--accent-soft)}
+.mz .mstat.big b{color:var(--accent);font-size:2rem}
+.mz .mstat.warn{background:var(--late-soft)}
+.mz .mstat.warn b{color:var(--late)}
+.mz .mstat.good{background:var(--ok-soft)}
+.mz .mstat.good b{color:var(--ok)}
+@media (max-width:420px){.mz .mstats{gap:6px}
+.mz .mstat{padding:10px}
+.mz .mstat b{font-size:1.25rem}
+.mz .mstat.big b{font-size:1.5rem}
+.mz .mstat .eyebrow{font-size:.64rem}}
+.mz .pill{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:2px 9px;font-size:.78rem;font-weight:700;white-space:nowrap}
+.mz .pill.ok{background:var(--ok-soft);color:var(--ok)}
+.mz .pill.late{background:var(--late-soft);color:var(--late)}
+.mz .pill.due{background:var(--due-soft);color:var(--due)}
+.mz .pill.diet{background:var(--sun-soft);color:var(--due)}
+.mz .pill.esente{background:var(--bg);color:var(--muted);border:1px solid var(--line)}
+.mz .pill.extra{background:var(--accent-soft);color:var(--accent)}
+.mz ul.list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.mz ul.list>li{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:10px 0;border-top:1px solid var(--line);flex-wrap:wrap}
+.mz ul.list>li:first-child{border-top:0}
+.mz .who{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+.mz .who .name{font-weight:700;background:none;border:0;padding:0;text-align:left;cursor:pointer;color:var(--ink)}
+.mz .who .name:hover{color:var(--accent)}
+.mz .daybar{display:flex;align-items:center;gap:8px;justify-content:space-between}
+.mz .daybar h2{font-size:1.3rem;text-align:center;flex:1}
+.mz .notice{border-radius:12px;padding:10px 12px;font-size:.9rem;font-weight:700}
+.mz .notice.open{background:var(--ok-soft);color:var(--ok)}
+.mz .notice.closed{background:var(--due-soft);color:var(--due)}
+.mz .msg{white-space:pre-wrap;background:var(--bg);border:1px dashed var(--line);border-radius:12px;padding:12px;font-size:.92rem;margin:0}
+.mz .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.mz .scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.mz table.mese{border-collapse:collapse;font-size:.8rem;min-width:100%}
+.mz table.mese th,.mz table.mese td{border:1px solid var(--line);padding:0;text-align:center;height:30px;min-width:30px}
+.mz table.mese th{background:var(--bg);font-weight:700;padding:3px 2px;line-height:1.1}
+.mz table.mese th.nm,.mz table.mese td.nm{position:sticky;left:0;background:var(--surface);text-align:left;padding:0 8px;min-width:140px;max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;z-index:1}
+.mz table.mese th.nm{background:var(--bg)}
+.mz table.mese td.tot,.mz table.mese th.tot{background:var(--sky-soft);font-weight:700;min-width:34px}
+.mz .thbtn{border:0;background:none;font:inherit;font-weight:700;cursor:pointer;padding:3px 2px;color:inherit;line-height:1.1;width:100%}
+.mz table.mese tfoot td{font-weight:700;background:var(--bg)}
+.mz .cell{width:100%;height:100%;min-height:30px;border:0;background:none;cursor:pointer;font-weight:700;font-size:.72rem;padding:0}
+.mz table.mese td.nt,.mz table.mese th.nt{min-width:130px;padding:0 4px}
+.mz table.mese .notebtn{display:flex;flex-direction:column;justify-content:center;width:100%;min-height:34px;border:0;background:none;cursor:pointer;text-align:left;padding:3px 4px;gap:1px;line-height:1.15}
+.mz .notebtn .ng{font-size:.75rem;font-weight:700;color:var(--ink)}
+.mz .notebtn.solo .ng{font-size:.85rem}
+.mz .notebtn .nr{font-size:.7rem;font-weight:700;color:var(--late)}
+.mz table.mese input.notein{border:0;background:transparent;width:100%;font-size:.75rem;padding:4px;min-height:28px;color:var(--ink)}
+.mz table.mese input.notein:focus{background:var(--bg);outline:2px solid var(--accent)}
+.mz table.mese .fut{opacity:.35}
+.mz table.mese .fut:hover,.mz table.mese .fut:focus-within{opacity:.8}
+.mz .saldobox{border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:2px;text-align:center}
+.mz .saldobox b{font-family:var(--f-display);font-size:2rem;line-height:1.1}
+.mz .saldobox.pos{background:var(--ok-soft);color:var(--ok)}
+.mz .saldobox.low{background:var(--due-soft);color:var(--due)}
+.mz .saldobox.neg{background:var(--late-soft);color:var(--late)}
+.mz .saldobox.es{background:var(--bg);color:var(--muted);border:1px solid var(--line)}
+.mz .saldobox .eyebrow{color:inherit}
+.mz details.aiuto summary{cursor:pointer;font-size:.85rem;font-weight:700;color:var(--accent);list-style:none;display:flex;align-items:center;gap:6px;min-height:32px}
+.mz details.aiuto summary::-webkit-details-marker{display:none}
+.mz details.aiuto summary::before{content:'▸';transition:transform .15s}
+.mz details.aiuto[open] summary::before{transform:rotate(90deg)}
+.mz details.aiuto p{margin-top:6px!important}
+.mz .cell.si{color:var(--ok);font-size:.9rem}
+.mz .cell.si.gratis{color:var(--ok)}
+.mz .cell.si.gratis::before{content:'';}
+.mz .gz{font-weight:700;display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;font-size:.68rem;line-height:1}
+.mz .cell.si.debito{color:var(--due);background:var(--due-soft)}
+.mz .ut{display:block;max-width:64px;margin:2px auto;padding:3px 5px;border-radius:6px;border:0;font-size:.68rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
+.mz .ut.ok{background:var(--ok-soft);color:var(--ok)}
+.mz .ut.due{background:var(--due-soft);color:var(--due)}
+.mz .ut.add{background:none;color:var(--none);font-size:.9rem}
+.mz tr.utfirst td{border-top:2px solid var(--accent)}
+.mz tr.utrow td.nm b{color:var(--accent)}
+.mz .cell.no{color:var(--late)}
+.mz .cell.vuoto{color:var(--none)}
+.mz .legend{display:flex;gap:12px;flex-wrap:wrap;font-size:.82rem;color:var(--muted)}
+.mz .legend b{font-weight:700}
+.mz .chips{display:flex;gap:6px;flex-wrap:wrap}
+.mz .chip{border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:6px 12px;font-weight:700;cursor:pointer;min-height:38px}
+.mz .chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.mz .saldo{font-family:var(--f-display);font-weight:700;font-size:1.05rem;text-align:right;white-space:nowrap}
+.mz .saldo.neg{color:var(--late)}
+.mz .saldo.low{color:var(--due)}
+.mz .saldo.pos{color:var(--ok)}
+.mz #badge{position:absolute;top:2px;right:18%}
+.mz .sheet-bg{position:fixed;inset:0;background:rgba(20,10,40,.45);z-index:20;display:flex;align-items:flex-end;justify-content:center}
+.mz .sheet{background:var(--bg);width:100%;max-width:640px;max-height:92%;overflow:auto;border-radius:20px 20px 0 0;padding:16px max(16px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:14px}
+.mz .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:999px;font-weight:700;z-index:30;font-size:.9rem}
+.mz .confirm{background:var(--due-soft);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px}
+@media (prefers-reduced-motion:no-preference){.mz .sheet{animation:up .18s ease-out}
+@keyframes up{from{transform:translateY(30px);opacity:.6}to{transform:none;opacity:1}}}
+.mz .mtabs{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px;position:sticky;top:env(safe-area-inset-top,0px);z-index:4}
+.mz .mtab{border:0;background:none;border-radius:999px;padding:8px 4px;font-weight:700;font-size:.85rem;color:var(--muted);cursor:pointer;min-height:38px}
+.mz .mtab[aria-pressed="true"]{background:var(--accent);color:var(--surface)}
+.mz .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:999px;font-weight:700;z-index:30;font-size:.9rem}
+.mz{display:flex;flex-direction:column;gap:16px}
+.mz [hidden]{display:none!important}
+
 </style>
 
 </head>
@@ -195,6 +315,7 @@ dialog form{padding:18px;display:flex;flex-direction:column;gap:12px}
   <button class="tab" role="tab" data-tab="home" id="tab-home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg>Home<span class="badge" id="badge" hidden></span></button>
   <button class="tab" role="tab" data-tab="tutti" id="tab-tutti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v16M15 4v16"/></svg>Tutti</button>
   <button class="tab" role="tab" data-tab="bambino" id="tab-bambino"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>Bambino</button>
+  <button class="tab" role="tab" data-tab="mensa" id="tab-mensa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3v8a3 3 0 0 0 6 0V3M10 3v18M17 3c-1.5 2-2 4-2 7h4c0-3-.5-5-2-7zM17 10v11"/></svg>Mensa<span class="badge" id="badgeMensa" hidden></span></button>
   <button class="tab" role="tab" data-tab="altro" id="tab-altro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Altro</button>
 </nav>
 
@@ -424,7 +545,8 @@ function render(){
   document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected',t.dataset.tab===tab));
   const n=scaduti().reduce((t,x)=>t+x.mm.length,0);const bd=$('#badge');bd.hidden=!n;bd.textContent=n;
   const app=$('#app');
-  app.innerHTML=({home:vHome,tutti:vTutti,bambino:vBambino,altro:vAltro})[tab]();
+  app.innerHTML=({home:vHome,tutti:vTutti,bambino:vBambino,altro:vAltro,mensa:()=>head('Mensa')+'<div class="mz" id="mzRoot"></div>'})[tab]();
+  if(window.Mensa)Mensa.dopoRender(tab);
   try{localStorage.setItem(KEY+'-tab',tab);}catch(e){}
 }
 
@@ -509,7 +631,7 @@ function vBambino(){
   (b.allergie?'<p class="allergy"><strong>Allergie e intolleranze:</strong> '+esc(b.allergie)+'</p>':'')+
   (b.note?'<p class="msg" style="margin:0"><span><strong>Note:</strong> '+esc(b.note)+'</span></p>':'')+
   '<div class="stats"><div class="stat"><span class="eyebrow">Dovuto anno</span><b>'+eur(t.dov)+'</b></div><div class="stat ok"><span class="eyebrow">Pagato</span><b>'+eur(t.pag)+'</b></div><div class="stat'+(t.scad?' late':'')+'"><span class="eyebrow">'+(t.scad?'Scaduto':'Resta')+'</span><b>'+eur(t.scad||t.res)+'</b></div></div></section>'+
-  '<section class="card"><div class="row spread"><h2>Recapiti</h2><button class="btn ghost" data-act="edit">Modifica</button></div>'+
+  (window.Mensa?Mensa.cardBambino(b.id):'')+'<section class="card"><div class="row spread"><h2>Recapiti</h2><button class="btn ghost" data-act="edit">Modifica</button></div>'+
   (recapiti(b).length?recapiti(b).map((r,i)=>{const n=telWa(r.tel);return'<div class="contact"><div class="who"><strong>'+esc(r.nome||'Recapito')+'</strong><span class="muted">'+esc(r.tel||'nessun numero')+(i===0&&r.tel?' · promemoria WhatsApp':'')+'</span></div>'+
     (r.tel?'<div class="row"><a class="btn primary" href="tel:'+esc(String(r.tel).replace(/[^\d+]/g,''))+'">Chiama</a><a class="btn" target="_blank" rel="noopener" href="https://wa.me/'+n+'">WhatsApp</a></div>':'')+'</div>';}).join('')
    :'<p class="small muted" style="margin:0">Nessun recapito. Tocca Modifica per aggiungere mamma, papà, nonni con il loro numero.</p>')+'</section>'+
@@ -734,7 +856,7 @@ function importa(file){
 /* ---------- eventi ---------- */
 document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{tab=t.dataset.tab;render();scrollTo(0,0);});
 const app=$('#app');
-app.addEventListener('click',e=>{
+app.addEventListener('click',e=>{if(e.target.closest('.mz'))return;
   const t=e.target.closest('[data-pay],[data-open],[data-act],[data-delnote],[data-delserv],[data-editcons],[data-gred],[data-grnew],[data-grtog],[data-vedicl],[data-temaset]');if(!t)return;
   if(t.dataset.gred){const k=t.dataset.gred,x=k.indexOf('|');openClasse(k.slice(x+1),k.slice(0,x));return;}
   if(t.dataset.temaset){applicaTema(t.dataset.temaset);render();return;}
@@ -762,14 +884,14 @@ app.addEventListener('click',e=>{
   else if(a==='wipe0')render();
   else if(a==='wipe2'){S=base();save();selId=null;render();toast('Dati cancellati');}
 });
-app.addEventListener('submit',e=>{e.preventDefault();
+app.addEventListener('submit',e=>{e.preventDefault();if(e.target.closest('.mz'))return;
   if(e.target.id==='formNota'){const v=$('#nuovaNota').value.trim();if(v){S.note.unshift({id:uid(),testo:v,data:isoOggi()});save();render();}}
   if(e.target.id==='formServ'){const n=$('#nsNome').value.trim(),c=+($('#nsCosto').value.replace(',','.')||0);if(n){S.servizi.push({id:uid(),nome:n,costo:c});save();render();}}
 });
-app.addEventListener('input',e=>{const t=e.target;
+app.addEventListener('input',e=>{if(e.target.closest('.mz'))return;const t=e.target;
   if(t.id==='cerca'){filtro=t.value;const pos=t.selectionStart;render();const c=$('#cerca');c.focus();c.setSelectionRange(pos,pos);}
 });
-app.addEventListener('change',e=>{const t=e.target;const b=S.bambini.find(x=>x.id===selId);
+app.addEventListener('change',e=>{if(e.target.closest('.mz'))return;const t=e.target;const b=S.bambini.find(x=>x.id===selId);
   if(t.id==='classe'){filtroClasse=t.value;render();}
   else if(t.id==='edu'){filtroEdu=t.value;render();}
   else if(t.dataset.wasel){t.checked?selWa.add(t.dataset.wasel):selWa.delete(t.dataset.wasel);render();}
@@ -791,10 +913,419 @@ app.addEventListener('change',e=>{const t=e.target;const b=S.bambini.find(x=>x.i
 });
 
 applicaTema(temaScelto());try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>render());}catch(e){}
+window.Rette={get S(){return S},save:()=>save(),vai:t=>{tab=t;render();scrollTo(0,0);},render:()=>render()};
 load();migraFratelli();migraDivise();
 try{const tb=localStorage.getItem(KEY+'-tab');if(tb)tab=tb;}catch(e){}
 render();
 if('serviceWorker' in navigator&&!framed&&location.protocol==='https:'){navigator.serviceWorker.register('sw.js').catch(()=>{});}
+})();
+</script>
+<script>
+(function(){
+
+const KEY='mensa-prototipo-v5';
+const GG=['dom','lun','mar','mer','gio','ven','sab'];
+const GGL=['domenica','lunedì','martedì','mercoledì','giovedì','venerdì','sabato'];
+const MESI=['gennaio','febbraio','marzo','aprile','maggio','giugno','luglio','agosto','settembre','ottobre','novembre','dicembre'];
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad=n=>String(n).padStart(2,'0');
+const iso=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const pd=s=>new Date(s+'T12:00:00');
+const eur=n=>(n<0?'−':'')+'€ '+Math.abs(n).toFixed(2).replace('.',',').replace(',00','');
+const isSchool=d=>d.getDay()>0&&d.getDay()<6;
+function addSchool(s,n){let d=pd(s);do{d.setDate(d.getDate()+n)}while(!isSchool(d));return iso(d)}
+const fmtDay=s=>{const d=pd(s);return GGL[d.getDay()]+' '+d.getDate()+' '+MESI[d.getMonth()]};
+const fmtShort=s=>{const d=pd(s);return GG[d.getDay()]+' '+d.getDate()+'/'+(d.getMonth()+1)};
+const TODAY=iso(new Date());
+
+/* ---------- dati finti ---------- */
+function seed(R){
+  const S={prezzo:5,cutoff:'08:30',minimo:10,inizio:R.esempio?'2026-11-02':iso(new Date()),giorni:{},pagamenti:[],noteMese:{}};
+  if(!R.esempio)return S;
+  const pat=[[1,2,3,4,5],[1,3,5],[1,2,3,4,5],[2,4],[1,2,3,4,5],[1,2,4,5],[1,2,3,4,5]];
+  R.bambini.forEach((b,i)=>{b.mensa={attivo:true,giorni:pat[i%pat.length],esente:!!b.esente,note:''}});
+  const kid=i=>R.bambini[i%R.bambini.length];
+  const G0=d=>S.giorni[d]??={x:{},medie:0,note:''};
+  G0('2026-11-03').x[kid(0).id]='no';G0('2026-11-05').x[kid(2).id]='no';G0('2026-11-06').x[kid(4).id]='no';
+  ['2026-11-02','2026-11-03','2026-11-04','2026-11-05','2026-11-06'].forEach((d,i)=>G0(d).medie=[6,8,7,5,6][i]);
+  G0('2026-11-03').ut=[{nome:'Bimbo una tantum (esempio)',pagato:true}];G0('2026-11-05').ut=[{nome:'Bimba una tantum (esempio)',pagato:false}];
+  let n=0;R.bambini.forEach((b,i)=>{if(b.mensa.esente)return;const q=[20,10,2,10,20,10,20][i%7];S.pagamenti.push({id:'p'+(++n),bid:b.id,data:'2026-11-02',pasti:q,importo:q*5,metodo:i%2?'bonifico':'contanti',conRetta:i===3})});
+  kid(1).mensa.note='paga la nonna (esempio)';
+  return S;
+}
+
+function save(){Rette.save()}
+const PX=new Map();
+function px(b){if(PX.has(b))return PX.get(b);const p={get id(){return b.id},get nome(){return b.nome},get classe(){return b.classe||''},
+  get giorni(){return b.mensa.giorni},set giorni(v){b.mensa.giorni=v},get dieta(){return b.allergie||''},set dieta(v){b.allergie=v},
+  get esente(){return !!b.mensa.esente},set esente(v){b.mensa.esente=v},get note(){return b.mensa.note||''},set note(v){b.mensa.note=v},rb:b};PX.set(b,p);return p}
+function ensure(){const R=Rette.S;if(!R.mensa)R.mensa=seed(R);S=R.mensa;
+  Object.defineProperty(S,'bambini',{configurable:true,enumerable:false,get:()=>Rette.S.bambini.filter(b=>b.mensa&&b.mensa.attivo).sort((x,y)=>x.nome.localeCompare(y.nome,'it')).map(px)});
+  return S}
+let S=null;
+let tab=(()=>{try{return localStorage.getItem(KEY+'-tab')}catch(e){return null}})()||'giorno';
+let main=null;
+let giorno=isSchool(pd(TODAY))?TODAY:addSchool(TODAY,1);
+let mese=giorno.slice(0,7);
+let pendingChiudi=null, openUt=null, pendingNo=null, openId=null, pendingReset=false, pagaForm=null;
+
+/* ---------- regole ---------- */
+const B=id=>S.bambini.find(b=>b.id===id);
+const G=d=>S.giorni[d]??={x:{},extra:[],medie:0,note:''};
+const Gr=d=>S.giorni[d]||{x:{},extra:[],medie:0,note:''};
+const FESTE=['01-01','01-06','04-25','05-01','06-02','08-15','11-01','12-08','12-25','12-26'];
+function pasquetta(y){const a=y%19,b=Math.floor(y/100),c=y%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,m=Math.floor((a+11*h+22*l)/451),mo=Math.floor((h+l-7*m+114)/31),da=((h+l-7*m+114)%31)+1;return iso(new Date(y,mo-1,da+1))}
+// giorno senza mensa: festa nazionale (in automatico) o tolto a mano; si può sempre rimettere
+const NOMIFESTE={'01-01':'Capodanno','01-06':'Epifania','04-25':'Liberazione','05-01':'Festa del lavoro','06-02':'Festa della Repubblica','08-15':'Ferragosto','11-01':'Ognissanti','12-08':'Immacolata','12-25':'Natale','12-26':'Santo Stefano'};
+function motivo(d){const g=Gr(d);if(g.motivo)return g.motivo;if(g.chiuso===undefined&&isChiuso(d))return NOMIFESTE[d.slice(5)]||'Pasquetta';return ''}
+function isChiuso(d){const g=Gr(d);if(g.chiuso!==undefined)return g.chiuso;return FESTE.includes(d.slice(5))||d===pasquetta(+d.slice(0,4))}
+function stato(d,b){const g=Gr(d);if(isChiuso(d))return '';const o=g.x[b.id];if(o!==undefined)return o==='noT'?'si':o;return b.giorni.includes(pd(d).getDay())?'si':''}
+// si = mangia e paga (anche se ha annullato tardi) · no = annullato in tempo · '' = non prenotato
+const pagaPasto=(d,b)=>!b.esente&&stato(d,b)==='si';
+function giorniScuola(da,a){const out=[];let d=pd(da);const e=pd(a);while(d<=e){if(isSchool(d))out.push(iso(d));d.setDate(d.getDate()+1)}return out}
+const UT=d=>isChiuso(d)?[]:(Gr(d).ut||[]);
+// date dei pasti NON coperti dai pagamenti (✓ gialla)
+function scoperti(b){const out=new Set();if(b.esente)return out;let r=S.pagamenti.filter(p=>p.bid===b.id).reduce((s,p)=>s+p.pasti,0);
+  for(const d of giorniScuola(S.inizio,addSchool(TODAY,150)))if(pagaPasto(d,b)){if(r>0)r--;else out.add(d)}return out}
+function conto(b){
+  const pagati=S.pagamenti.filter(p=>p.bid===b.id).reduce((s,p)=>s+p.pasti,0);
+  const fino=TODAY<S.inizio?null:TODAY;
+  const usati=fino?giorniScuola(S.inizio,fino).filter(d=>pagaPasto(d,b)).length:0;
+  const rimasti=pagati-usati;
+  // previsione: da domani, seguendo i giorni fissi e le modifiche già segnate
+  let fine=null;
+  if(!b.esente&&rimasti>=0){let r=rimasti,d=TODAY,guard=0;
+    while(guard++<400){d=addSchool(d,1);if(pagaPasto(d,b)){if(r===0){fine=d;break}r--}}}
+  return {pagati,usati,rimasti,fine,euro:rimasti*S.prezzo}
+}
+function nowAfterCutoff(d){if(d!==TODAY)return d<TODAY;const n=new Date();return pad(n.getHours())+':'+pad(n.getMinutes())>S.cutoff}
+
+/* ---------- interfaccia ---------- */
+function toast(t){const el=document.getElementById('mToast');if(!el)return;el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>el.hidden=true,2200)}
+function saldoHtml(c,b){
+  if(b.esente)return '<span class="pill esente">Non paga</span>';
+  const cls=c.rimasti<0?'neg':c.rimasti<=2?'low':'pos';
+  const t=c.rimasti<0?`debito ${-c.rimasti} past${-c.rimasti===1?'o':'i'}`:`${c.rimasti} past${c.rimasti===1?'o':'i'}`;
+  return `<span class="saldo ${cls}">${t}</span>`}
+
+function badge(){const debiti=S.bambini.filter(b=>!b.esente&&conto(b).rimasti<0).length+utDaPagare().length;const el=document.getElementById('badgeMensa');if(el){el.hidden=!debiti;el.textContent=debiti}}
+function render(){
+  ensure();const root=document.getElementById('mzRoot');if(!root){badge();return}
+  if(!root.dataset.ok){root.dataset.ok=1;root.innerHTML=`<div class="mtabs" role="group" aria-label="Mensa">${[['giorno','Oggi'],['mese','Mese'],['pagamenti','Pagamenti'],['bambini','Bambini']].map(([k,l])=>`<button class="mtab" data-mt="${k}">${l}</button>`).join('')}</div><div id="mMain"></div><div id="mSheet"></div><div id="mToast" class="toast" hidden></div>`}
+  main=document.getElementById('mMain');
+  root.querySelectorAll('.mtab').forEach(t=>t.setAttribute('aria-pressed',t.dataset.mt===tab));
+  badge();
+  ({giorno:rGiorno,mese:rMese,pagamenti:rPagamenti,bambini:rBambini})[tab]();
+  rSheet();
+}
+
+function rGiorno(){
+  const d=giorno,g=Gr(d),dow=pd(d).getDay();
+  const mangiano=S.bambini.filter(b=>stato(d,b)==='si');
+  const uts=UT(d);
+  const assenti=S.bambini.filter(b=>stato(d,b)==='no');
+  const altri=S.bambini.filter(b=>stato(d,b)===''&&!isChiuso(d));
+  const medie=+g.medie||0;
+  const totale=mangiano.length+uts.length+medie;
+  const diete=mangiano.filter(b=>b.dieta);
+  const acc=g.acc||{};
+  const tov=acc.tov??totale, pos=acc.pos??totale, acq=acc.acq??Math.ceil(totale/6);
+  const isToday=d===TODAY;
+  let avviso='';
+  if(!isChiuso(d)&&isToday)avviso=nowAfterCutoff(d)?`<div class="notice closed">Sono passate le ${S.cutoff}: chi annulla adesso resta segnato e paga il pasto, salvo eccezioni.</div>`:`<div class="notice open">Annullamenti gratis fino alle ${S.cutoff}. Messaggio alla cucina entro le 9:00.</div>`;
+  const msg=isChiuso(d)?'':[
+    `Mensa ${fmtShort(d)}`,
+    `PASTI TOTALI: ${totale}`,
+    `• Primarie: ${mangiano.length+uts.length}`,
+    medie?`• Medie: ${medie}`:null,
+    diete.length?`\nCAMBI / INTOLLERANZE:\n`+diete.map(b=>`• ${b.nome} (${b.classe}): ${b.dieta}`).join('\n'):null,
+    g.dieteMedie?`• Medie: ${g.dieteMedie}`:null,
+    `\nACCESSORI:\n• Tovagliette: ${tov}\n• Posate: ${pos}\n• Acqua: ${acq} bottiglie`,
+    g.note?`\nNOTE:\n${g.note}`:null
+  ].filter(x=>x!==null).join('\n');
+  main.innerHTML=`
+  <div style="display:flex;flex-direction:column;gap:16px">
+  <div class="card">
+    <div class="daybar">
+      <button class="btn" data-act="prev" aria-label="Giorno precedente">‹</button>
+      <div style="flex:1;text-align:center"><h2>${fmtDay(d)}</h2>${isToday?'<span class="small muted">oggi</span>':d===(isSchool(pd(TODAY))?TODAY:addSchool(TODAY,1))?'<span class="small muted">prossimo giorno di mensa</span>':`<button class="btn ghost sm" data-act="oggi">Vai a oggi</button>`}</div>
+      <button class="btn" data-act="next" aria-label="Giorno successivo">›</button>
+    </div>
+    ${avviso}
+    <label class="chk small"><input type="checkbox" id="chiuso" ${isChiuso(d)?'checked':''}> Mensa chiusa questo giorno (festa, gita…)</label>
+  </div>
+  ${isChiuso(d)?`<div class="card"><p class="muted" style="margin:0">Mensa chiusa: nessun pasto conteggiato e nessun addebito.</p><label class="f">Motivo (facoltativo)<input type="text" id="motivo" value="${esc(motivo(d))}" placeholder="festa, gita, sciopero…"></label></div>`:`
+  <div class="mstats">
+    <div class="mstat big"><span class="eyebrow">Pasti totali</span><b>${totale}</b></div>
+    <div class="mstat"><span class="eyebrow">Coperti primarie</span><b>${mangiano.length+uts.length}</b><span class="small muted">${uts.length?mangiano.length+' fissi + '+uts.length+' una tantum':'da apparecchiare'}</span></div>
+    <div class="mstat ${assenti.length?'warn':'good'}"><span class="eyebrow">Assenti</span><b>${assenti.length}</b></div>
+  </div>
+
+  <div class="card">
+    <div class="row spread"><h2>Mangiano (${mangiano.length})</h2><span class="small muted">tocca «Assente» per annullare</span></div>
+    <ul class="list">${mangiano.map(b=>{const c=conto(b);return `<li>
+      <div class="who"><button class="name" data-open="${b.id}">${esc(b.nome)}</button>
+        <div class="row small"><span class="muted">${esc(b.classe)}</span>${b.dieta?`<span class="pill diet">${esc(b.dieta)}</span>`:''}${b.giorni.includes(dow)?'':'<span class="pill extra">aggiunto</span>'}${b.note?`<span class="muted">📝 ${esc(b.note)}</span>`:''}${b.esente?'<span class="pill esente">non paga</span>':c.rimasti<=0?saldoHtml(c,b):''}</div></div>
+      ${pendingNo===b.id?`<div class="confirm" style="width:100%"><b class="small">Annulla dopo le ${S.cutoff}: di solito resta segnato e paga.</b><div class="row"><button class="btn sm" data-resta="1">Resta ✓ (paga)</button><button class="btn sm danger" data-no="${b.id}">Togli lo stesso</button></div></div>`:`<button class="btn sm danger" data-no="${b.id}">Assente</button>`}</li>`}).join('')||'<li class="muted">Nessun bambino prenotato.</li>'}</ul>
+  </div>
+
+  ${assenti.length?`<div class="card"><h2>Assenti (${assenti.length})</h2>
+    <ul class="list">${assenti.map(b=>{const st=stato(d,b);return `<li>
+      <div class="who"><button class="name" data-open="${b.id}">${esc(b.nome)}</button>
+      <div class="row small"><span class="muted">${esc(b.classe)}</span>
+</div></div>
+      <button class="btn sm" data-si="${b.id}">Rimetti</button></li>`}).join('')}</ul></div>`:''}
+
+  <div class="card">
+    <h2>Una tantum (${uts.length})</h2>
+    <p class="small muted" style="margin:0">Bambini che mangiano solo oggi e pagano sul momento (${eur(S.prezzo)}). Tocca il nome per modificarlo.</p>
+    ${uts.length?`<ul class="list">${uts.map((u,i)=>`<li><button class="name" style="background:none;border:0;padding:0;font-weight:700;cursor:pointer;color:var(--ink);flex:1;text-align:left" data-ut="${d}|${i}">${esc(u.nome)}</button>
+      <button class="pill ${u.pagato?'ok':'due'}" style="border:0;cursor:pointer;min-height:32px" data-utp="${d}|${i}">${u.pagato?'Pagato ✓':'Da pagare'}</button></li>`).join('')}</ul>`:''}
+    <div class="row"><input type="text" id="addUt" list="utNomi" placeholder="Nome del bambino" style="flex:1"><button class="btn primary" data-act="addUt">Aggiungi</button></div>
+    <datalist id="utNomi">${utNomi().map(n=>`<option value="${esc(n)}">`).join('')}</datalist>
+  </div>
+  <div class="card">
+    <h2>Iscritti fuori dai giorni fissi</h2>
+    <div class="row"><select id="addB" style="flex:1"><option value="">Bambino della lista che si prenota oggi…</option>${altri.map(b=>`<option value="${b.id}">${esc(b.nome)} · ${esc(b.classe)}</option>`).join('')}</select><button class="btn primary" data-act="addB">Aggiungi</button></div>
+  </div>
+
+  <div class="card">
+    <h2>Note del giorno</h2>
+    <textarea id="noteM" placeholder="Promemoria solo per te (non va alla cucina)">${esc(g.noteM||'')}</textarea>
+  </div>
+
+  <div class="card">
+    <h2>Medie</h2>
+    <p class="small muted" style="margin:0">Il numero lo dà l'altro educatore: scrivilo qui e va nel totale.</p>
+    <div class="row"><label class="f" style="max-width:140px">Pasti medie<input type="number" id="medie" min="0" inputmode="numeric" value="${medie||''}" placeholder="0"></label>
+    <label class="f">Cambi / intolleranze medie<input type="text" id="dieteMedie" value="${esc(g.dieteMedie||'')}" placeholder="es. 1 senza glutine"></label></div>
+  </div>
+
+  <div class="card">
+    <h2>Messaggio per la cucina</h2>
+    <div class="grid3">
+      <label class="f">Tovagliette<input type="number" id="acc-tov" min="0" value="${tov}"></label>
+      <label class="f">Posate<input type="number" id="acc-pos" min="0" value="${pos}"></label>
+      <label class="f">Acqua (bott.)<input type="number" id="acc-acq" min="0" value="${acq}"></label>
+    </div>
+    <label class="f">Note scritte a mano (vanno in fondo al messaggio)<textarea id="noteG" placeholder="Qualsiasi cosa in più da dire alla cucina…">${esc(g.note||'')}</textarea></label>
+    <pre class="msg" id="msg">${esc(msg)}</pre>
+    <div class="row"><button class="btn primary" data-act="copia">Copia messaggio</button>
+    <a class="btn" style="text-decoration:none;display:inline-flex;align-items:center" href="https://wa.me/?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener">Apri WhatsApp</a></div>
+  </div>`}
+  </div>`;
+}
+
+function rMese(){
+  const [y,m]=mese.split('-').map(Number);
+  const tutti=giorniScuola(`${y}-${pad(m)}-01`,iso(new Date(y,m,0)));
+  const days=tutti.filter(d=>!isChiuso(d));
+  const tolti=tutti.filter(isChiuso);
+  // gruppi per settimana
+  const weeks=[];days.forEach(d=>{const w=pd(d).getDay();if(!weeks.length||w===1||pd(d)-pd(weeks.at(-1).at(-1))>3*864e5)weeks.push([]);weeks.at(-1).push(d)});
+  const head1=weeks.map(w=>w.map(d=>`<th class="${d>TODAY?'fut':''}"><button class="thbtn" data-chiudi="${d}" aria-label="Togli ${fmtShort(d)}">${GG[pd(d).getDay()]}<br>${pd(d).getDate()}</button></th>`).join('')+'<th class="tot">TOT</th>').join('');
+  const rows=S.bambini.map(b=>{let tm=0;const sc=scoperti(b);
+    const cells=weeks.map(w=>{let tw=0;return w.map(d=>{const st=stato(d,b);const fut=d>TODAY;if(st==='si'&&!fut)tw++;
+      const lab=st==='si'?(b.esente?'<span class="gz">G</span>':'✓'):st==='no'?'NO':'·';
+      return `<td class="${fut?'fut':''}"><button class="cell ${st||'vuoto'}${st==='si'&&sc.has(d)?' debito':''}${st==='si'&&b.esente?' gratis':''}" data-c="${b.id}|${d}" aria-label="${esc(b.nome)} ${fmtShort(d)}">${lab}</button></td>`}).join('')+`<td class="tot">${(tm+=tw,tw)||''}</td>`}).join('');
+    const gtxt=b.giorni.length===5?'tutti i giorni':b.giorni.length?b.giorni.map(x=>GG[x]).join(' '):'a richiesta';
+    const rosso=[b.dieta,b.note].filter(Boolean).join(' · ');
+    return `<tr><td class="nm" title="${esc(b.nome)}"><button class="name" style="background:none;border:0;padding:0;font-weight:700;cursor:pointer;color:var(--ink)" data-open="${b.id}">${esc(b.nome)}</button></td><td class="nt"><button class="notebtn${rosso?'':' solo'}" data-open="${b.id}" aria-label="Note ${esc(b.nome)}"><span class="ng">${esc(gtxt)}</span>${rosso?`<span class="nr">${esc(rosso)}</span>`:''}</button></td>${cells}<td class="tot">${tm}</td></tr>`}).join('');
+  const nUt=Math.max(4,...days.map(d=>UT(d).length+1));
+  const utRows=Array.from({length:nUt},(_,i)=>`<tr class="utrow${i===0?' utfirst':''}"><td class="nm">${i===0?'<b>Una tantum</b>':''}</td><td class="nt"></td>`+weeks.map(w=>w.map(d=>{const u=UT(d)[i];
+    if(u)return `<td class="${d>TODAY?'fut':''}"><button class="ut ${u.pagato?'ok':'due'}" data-ut="${d}|${i}" title="${esc(u.nome)}">${esc(u.nome.split(' ')[0])}</button></td>`;
+    if(i===UT(d).length)return `<td><button class="ut add" data-ut="${d}|new" aria-label="Aggiungi una tantum ${fmtShort(d)}">+</button></td>`;return '<td></td>'}).join('')+'<td class="tot"></td>').join('')+'<td class="tot"></td></tr>').join('');
+  const foot=(label,fn)=>{let all=0;return `<tr><td class="nm">${label}</td><td class="nt"></td>`+weeks.map(w=>{let tw=0;return w.map(d=>{const v=fn(d);const fut=d>TODAY;if(!fut)tw+=v;return `<td class="${fut?'fut':''}">${v}</td>`}).join('')+`<td class="tot">${(all+=tw,tw)}</td>`}).join('')+`<td class="tot">${all}</td></tr>`};
+  const prim=d=>S.bambini.filter(b=>stato(d,b)==='si').length+UT(d).length;
+  const med=d=>isChiuso(d)?0:(+Gr(d).medie||0);
+  main.innerHTML=`<div style="display:flex;flex-direction:column;gap:16px">
+  <div class="card">
+    <div class="daybar"><button class="btn" data-act="mprev" aria-label="Mese precedente">‹</button><h2>Mensa ${MESI[m-1]} ${y}</h2><button class="btn" data-act="mnext" aria-label="Mese successivo">›</button></div>
+    <div class="legend"><span><b style="color:var(--ok)">✓</b> mangia, pagato</span><span><b style="color:var(--due);background:var(--due-soft);padding:0 4px;border-radius:4px">✓</b> mangia, non ancora pagato</span><span style="color:var(--ok)"><span class="gz">G</span> <span style="color:var(--muted)">mangia gratis (esente)</span></span><span><b style="color:var(--late)">NO</b> annullato in tempo (chi annulla tardi resta ✓ e paga)</span><span><b style="color:var(--none)">·</b> non prenotato</span></div>
+    <details class="aiuto"><summary>Come funziona</summary><p class="small muted" style="margin:0">Tocca una casella per cambiarla. Come sul foglio: i giorni fissi sono già segnati, scrivi solo le eccezioni. I giorni che devono ancora venire sono chiari, solo da vedere (puoi già segnare un NO), e non entrano nei totali. La ✓ gialla nei giorni futuri mostra da quando finiranno i pasti pagati. Nella colonna Note: in alto i giorni in cui mangia, in rosso allergie, intolleranze e altre note (tocca per modificarle). In fondo, le righe «Una tantum»: hanno il nome verde se ha pagato e giallo se deve pagare, + per aggiungerne uno.</p></details>
+  </div>
+  ${pendingChiudi?`<div class="confirm"><b>Togliere ${fmtDay(pendingChiudi)} dal foglio? (festa, gita, mensa chiusa)</b><span class="small">Quel giorno non conta pasti né addebiti. Puoi rimetterlo quando vuoi.</span><input type="text" id="chiudiNota" placeholder="Motivo (facoltativo): festa, gita, sciopero…"><div class="row"><button class="btn danger" data-act="chiudiOk">Togli il giorno</button><button class="btn" data-act="chiudiNo">Annulla</button></div></div>`:''}
+  <div class="scroll"><table class="mese">
+    <thead><tr><th class="nm">Nome</th><th class="nt">Note</th>${head1}<th class="tot">Mese</th></tr></thead>
+    <tbody>${rows}${utRows}</tbody>
+    <tfoot>${foot('Tot. primarie',prim)}${foot('Medie',med)}${foot('Tot. prenotati',d=>prim(d)+med(d))}</tfoot>
+  </table></div>
+  <div class="card"><h2>Giorni senza mensa</h2>
+    <p class="small muted" style="margin:0">Le feste nazionali sono già tolte. Per togliere un altro giorno tocca la sua data in alto nel foglio.</p>
+    ${tolti.length?`<div class="chips">${tolti.map(d=>`<button class="chip" data-riapri="${d}" title="Rimetti">${fmtShort(d)}${motivo(d)?' · '+esc(motivo(d)):''} · rimetti ↺</button>`).join('')}</div>`:'<span class="small muted">Nessuno questo mese.</span>'}
+  </div>
+  <div class="card"><h2>Note del mese</h2><textarea id="noteMese" placeholder="Come le note in fondo al foglio">${esc((S.noteMese||{})[mese]||'')}</textarea></div>
+  ${days.some(d=>Gr(d).noteM)?`<div class="card"><h2>Note dei giorni</h2><ul class="list">${days.filter(d=>Gr(d).noteM).map(d=>`<li><b class="small">${fmtShort(d)}</b><span class="small" style="flex:1">${esc(Gr(d).noteM)}</span></li>`).join('')}</ul></div>`:''}
+  </div>`;
+}
+
+function utDaPagare(){const out=[];for(const d of Object.keys(S.giorni).sort())UT(d).forEach((u,i)=>{if(!u.pagato)out.push({d,i,u})});return out}
+function utNomi(){const set=new Set();for(const g of Object.values(S.giorni))(g.ut||[]).forEach(u=>set.add(u.nome));return [...set].sort()}
+function rPagamenti(){
+  const list=S.bambini.map(b=>({b,c:conto(b)})).filter(x=>!x.b.esente);
+  const debito=list.filter(x=>x.c.rimasti<0);
+  const quasi=list.filter(x=>x.c.rimasti>=0&&x.c.rimasti<=2);
+  const meseCorr=TODAY.slice(0,7);
+  const pm=S.pagamenti.filter(p=>p.data.startsWith(meseCorr));
+  const cont=pm.filter(p=>p.metodo==='contanti').reduce((s,p)=>s+p.importo,0);
+  const bon=pm.filter(p=>p.metodo==='bonifico').reduce((s,p)=>s+p.importo,0);
+  const row=({b,c})=>`<li><div class="who"><button class="name" data-open="${b.id}">${esc(b.nome)}</button>
+    <span class="small muted">${esc(b.classe)} · pagati ${c.pagati}, consumati ${c.usati}${c.fine?` · ultimo pasto pagato: ${fmtShort(c.fine)}`:''}</span></div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">${saldoHtml(c,b)}${c.rimasti<0?`<span class="small" style="color:var(--late)">${eur(-c.euro)} da pagare</span>`:''}</div></li>`;
+  main.innerHTML=`<div style="display:flex;flex-direction:column;gap:16px">
+  <div class="mstats">
+    <div class="mstat warn"><span class="eyebrow">In debito</span><b>${debito.length}</b><span class="small">${eur(debito.reduce((s,x)=>s-x.c.euro,0))}</span></div>
+    <div class="mstat" style="background:var(--due-soft)"><span class="eyebrow">Quasi finiti</span><b style="color:var(--due)">${quasi.length}</b><span class="small muted">0-2 pasti</span></div>
+    <div class="mstat good"><span class="eyebrow">Incassato ${MESI[+meseCorr.slice(5)-1]}</span><b>${eur(cont+bon)}</b><span class="small muted">${eur(cont)} cont. · ${eur(bon)} bon.</span></div>
+  </div>
+  <div class="card"><h2>Come si calcola</h2><p class="small muted" style="margin:0">Ogni pagamento carica dei pasti (${eur(S.prezzo)} l'uno). Ogni giorno in cui il bambino mangia (o annulla dopo le ${S.cutoff} e resta segnato), si scala un pasto. Finiti i pasti continua a mangiare e va in debito. La data dell'ultimo pasto pagato segue i suoi giorni fissi.</p></div>
+  ${debito.length?`<div class="card"><h2>In debito</h2><ul class="list">${debito.map(row).join('')}</ul>
+    <button class="btn" data-act="copiaDebiti">Copia elenco per i genitori</button></div>`:''}
+  ${quasi.length?`<div class="card"><h2>Stanno finendo</h2><ul class="list">${quasi.map(row).join('')}</ul></div>`:''}
+  <div class="card"><h2>Tutti</h2><ul class="list">${list.filter(x=>x.c.rimasti>2).map(row).join('')}</ul></div>
+  ${utDaPagare().length?`<div class="card"><h2>Una tantum da pagare</h2><ul class="list">${utDaPagare().map(({d,i,u})=>`<li><div class="who"><b>${esc(u.nome)}</b><span class="small muted">${fmtShort(d)} · ${eur(S.prezzo)}</span></div><button class="btn sm primary" data-utp="${d}|${i}">Segna pagato</button></li>`).join('')}</ul></div>`:''}
+  <div class="card"><h2>Ultimi pagamenti</h2><ul class="list">${S.pagamenti.slice().sort((a,b)=>b.data.localeCompare(a.data)).slice(0,12).map(p=>{const b=B(p.bid);return b?`<li><div class="who"><button class="name" data-open="${b.id}">${esc(b.nome)}</button><span class="small muted">${fmtShort(p.data)} · ${p.metodo==='gratis'?'gratis / già pagati':p.metodo}${p.conRetta?' · con la retta':''}</span></div><span><b>${eur(p.importo)}</b> <span class="small muted">${p.pasti} pasti</span></span></li>`:''}).join('')}</ul></div>
+  </div>`;
+}
+
+function rBambini(){
+  const tutti=[...Rette.S.bambini].sort((x,y)=>x.nome.localeCompare(y.nome,'it'));
+  main.innerHTML=`<div style="display:flex;flex-direction:column;gap:16px">
+  <div class="card"><h2>Chi va in mensa</h2><p class="small muted" style="margin:0">Sono gli stessi bambini dell'app. Attiva la mensa a chi la fa e tocca il nome per giorni fissi, allergie e note.</p>
+  <ul class="list">${tutti.map(r=>{const on=r.mensa&&r.mensa.attivo;const b=on?px(r):null;return `<li><div class="who">${on?`<button class="name" data-open="${r.id}">${esc(r.nome)}</button>`:`<b class="muted">${esc(r.nome)}</b>`}
+    <div class="row small"><span class="muted">${esc(r.classe||'')}${on?' · '+(b.giorni.length===5?'tutti i giorni':b.giorni.length?b.giorni.map(x=>GG[x]).join(' '):'a richiesta'):''}</span>${on&&b.dieta?`<span class="pill diet">${esc(b.dieta)}</span>`:''}${on&&b.esente?'<span class="pill esente">non paga</span>':''}</div></div>
+    <label class="chk small"><input type="checkbox" data-mon="${r.id}" ${on?'checked':''} onclick="return false"> Mensa</label></li>`}).join('')||'<li class="muted">Nessun bambino: aggiungili dalla scheda Bambino.</li>'}</ul></div>
+  <div class="card"><h2>Impostazioni</h2>
+    <div class="grid3"><label class="f">Prezzo pasto (€)<input type="number" id="set-prezzo" step="0.5" min="0" value="${S.prezzo}"></label>
+    <label class="f">Annulla entro<input type="text" id="set-cutoff" value="${esc(S.cutoff)}"></label>
+    <label class="f">Minimo pasti anticipati<input type="number" id="set-minimo" min="1" value="${S.minimo}"></label></div>
+    ${pendingReset?`<div class="confirm"><b>Ricominciare la mensa da capo? Le prove della mensa fatte finora si cancellano (le rette no).</b><div class="row"><button class="btn danger" data-act="resetOk">Sì, ricarica</button><button class="btn" data-act="resetNo">Annulla</button></div></div>`:`<button class="btn danger" data-act="reset">Ricomincia la mensa da capo</button>`}
+  </div></div>`;
+}
+
+function rSheet(){
+  const host=document.getElementById('mSheet');if(!host)return;
+  if(openUt){const {d,i}=openUt;const u=i==='new'?{nome:'',pagato:false}:UT(d)[+i];if(!u){openUt=null;host.innerHTML='';return}
+    host.innerHTML=`<div class="sheet-bg" data-close="1"><div class="sheet" role="dialog" aria-modal="true" aria-label="Una tantum">
+      <div class="row spread"><h2>Una tantum · ${fmtShort(d)}</h2><button class="btn" data-close="1">Chiudi</button></div>
+      <div class="card"><label class="f">Nome del bambino<input type="text" id="ut-nome" list="utNomi2" value="${esc(u.nome)}"></label><datalist id="utNomi2">${utNomi().map(n=>`<option value="${esc(n)}">`).join('')}</datalist>
+      <div class="chips"><button class="chip" aria-pressed="${!u.pagato}" data-utset="0">Da pagare</button><button class="chip" aria-pressed="${!!u.pagato}" data-utset="1">Pagato (${eur(S.prezzo)})</button></div>
+      <div class="row"><button class="btn primary" data-act="utSalva">${i==='new'?'Aggiungi':'Salva'}</button>${i==='new'?'':'<button class="btn danger" data-act="utDel">Elimina</button>'}</div></div>
+    </div></div>`;return}
+  if(!openId){host.innerHTML='';return}
+  const isNew=openId==='new';
+  const b=isNew?{id:'',nome:'',classe:'',giorni:[1,2,3,4,5],dieta:'',esente:false,note:''}:B(openId);
+  if(!b){openId=null;host.innerHTML='';return}
+  const c=isNew?null:conto(b);
+  const pf=pagaForm||{pasti:S.minimo,metodo:'contanti',data:TODAY,conRetta:false};
+  const pays=isNew?[]:S.pagamenti.filter(p=>p.bid===b.id).sort((a,z)=>z.data.localeCompare(a.data));
+  host.innerHTML=`<div class="sheet-bg" data-close="1"><div class="sheet" role="dialog" aria-modal="true" aria-label="${esc(b.nome||'Nuovo bambino')}">
+    <div class="row spread"><h2>${esc(b.nome||'Nuovo bambino')}</h2><button class="btn" data-close="1">Chiudi</button></div>
+    ${isNew?'':`<div class="card">
+      <div class="saldobox ${b.esente?'es':c.rimasti<0?'neg':c.rimasti<=2?'low':'pos'}">
+        <span class="eyebrow">Saldo</span>
+        ${b.esente?'<b>Non paga</b><span class="small">Mensa gratis (G)</span>':c.rimasti<0?`<b>− ${eur(-c.euro).replace('−','')}</b><span class="small">debito di ${-c.rimasti} past${-c.rimasti===1?'o':'i'}</span>`:`<b>${c.rimasti} past${c.rimasti===1?'o':'i'}</b><span class="small">pagati e non ancora consumati = ${eur(c.euro)}${c.fine?' · coperto fino a '+fmtShort(c.fine):''}</span>`}
+      </div>
+      ${b.esente?'<p class="small muted" style="margin:0">Non paga la mensa: i pasti si contano ma non si scalano.</p>':`
+      <p class="small" style="margin:0">Pagati <b>${c.pagati}</b> · consumati <b>${c.usati}</b> (da ${fmtShort(S.inizio)})<br>${c.rimasti<0?`<b style="color:var(--late)">In debito di ${-c.rimasti} pasti = ${eur(-c.euro)}</b>`:c.fine?`Coperto fino a <b>${fmtDay(c.fine)}</b> compreso`:'Nessun pasto previsto nei prossimi giorni'}</p>
+      <div class="confirm" style="background:var(--accent-soft)">
+        <b>Registra pagamento</b>
+        <div class="chips">${[S.minimo,S.minimo*2,1].concat(c.rimasti<0?[-c.rimasti]:[]).filter((v,i,a)=>a.indexOf(v)===i).map(n=>`<button class="chip" aria-pressed="${pf.pasti===n}" data-pp="${n}">${n===1?'1 pasto (sul momento)':n===-c.rimasti?`salda debito (${n})`:n+' pasti'}</button>`).join('')}</div>
+        <div class="row"><label class="f" style="max-width:110px">Pasti<input type="number" id="pf-pasti" min="1" value="${pf.pasti}"></label>
+          <label class="f">Data<input type="date" id="pf-data" value="${pf.data}"></label></div>
+        <div class="chips"><button class="chip" aria-pressed="${pf.metodo==='contanti'}" data-pm="contanti">Contanti</button><button class="chip" aria-pressed="${pf.metodo==='bonifico'}" data-pm="bonifico">Bonifico</button><button class="chip" aria-pressed="${pf.metodo==='gratis'}" data-pm="gratis">Gratis / già pagati</button></div>
+        <label class="chk small"><input type="checkbox" id="pf-retta" ${pf.conRetta?'checked':''}> Pagato insieme alla retta (un solo pagamento)</label>
+        <button class="btn primary" data-act="paga">${pf.metodo==='gratis'?`Aggiungi ${pf.pasti} pasti gratis`:'Registra '+eur(pf.pasti*S.prezzo)}</button>
+      </div>`}
+      ${pays.length?`<ul class="list">${pays.map(p=>`<li><span class="small">${fmtShort(p.data)} · ${p.metodo==='gratis'?'gratis / già pagati':p.metodo}${p.conRetta?' · con la retta':''}</span><span class="row"><b>${eur(p.importo)}</b><span class="small muted">${p.pasti} pasti</span><button class="btn ghost sm" data-pdel="${p.id}" aria-label="Elimina pagamento">✕</button></span></li>`).join('')}</ul>`:''}
+    </div>`}
+    <div class="card">
+      <span class="eyebrow">Dati mensa</span>
+      <p class="small muted" style="margin:0">${esc(b.classe?'Classe '+b.classe:'')} · nome, classe e recapiti si cambiano nella scheda Bambino dell'app.</p>
+      <div class="f">Giorni fissi in mensa<div class="chips" id="b-giorni">${[1,2,3,4,5].map(n=>`<button class="chip" aria-pressed="${b.giorni.includes(n)}" data-bg="${n}">${GG[n]}</button>`).join('')}</div><span class="small muted" style="font-weight:400">Nessun giorno = mangia solo quando si prenota.</span></div>
+      <label class="f">Allergie / intolleranze (le stesse della scheda Bambino)<input type="text" id="b-dieta" value="${esc(b.dieta)}" placeholder="es. no maiale, celiaco"></label>
+      <label class="f">Note<textarea id="b-note" placeholder="es. 2 pasti già pagati a ottobre, paga la nonna…">${esc(b.note||'')}</textarea></label>
+      <label class="chk"><input type="checkbox" id="b-esente" ${b.esente?'checked':''}> Non paga la mensa (G)</label>
+      <button class="btn primary" data-act="salvaB">${isNew?'Aggiungi bambino':'Salva'}</button>
+    </div>
+  </div></div>`;
+}
+
+/* ---------- azioni ---------- */
+function setStato(d,id,st){const g=G(d);const b=B(id);const def=b.giorni.includes(pd(d).getDay())?'si':'';if(st===def)delete g.x[id];else g.x[id]=st;save();render()}
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.mz'))return;ensure();
+  const t=e.target.closest('button,[data-close],label:has([data-mon])');if(!t)return;if(t.tagName==='LABEL'){e.preventDefault();t.dataset.mon=t.querySelector('[data-mon]').dataset.mon}
+  const ds=t.dataset;
+  if(ds.mt){tab=ds.mt;try{localStorage.setItem(KEY+'-tab',tab)}catch(_){};window.scrollTo(0,0);return render()}
+  if(ds.mopen){Rette.vai('mensa');openId=ds.mopen;return render()}
+  if(ds.mon){const b=Rette.S.bambini.find(x=>x.id===ds.mon);if(b.mensa)b.mensa.attivo=!b.mensa.attivo;else b.mensa={attivo:true,giorni:[1,2,3,4,5],esente:false,note:''};save();toast(b.mensa.attivo?'Aggiunto alla mensa':'Tolto dalla mensa');return render()}
+  if(ds.close!==undefined&&e.target===t){openId=null;openUt=null;pagaForm=null;return render()}
+  if(ds.open){openId=ds.open;pagaForm=null;return render()}
+  if(ds.chiudi){pendingChiudi=ds.chiudi;return render()}
+  if(ds.riapri){G(ds.riapri).chiuso=false;save();toast('Giorno rimesso');return render()}
+  if(ds.ut){const [d,i]=ds.ut.split('|');openUt={d,i};return render()}
+  if(ds.utp){const [d,i]=ds.utp.split('|');const u=G(d).ut[+i];u.pagato=!u.pagato;save();toast(u.pagato?'Segnato pagato':'Segnato da pagare');return render()}
+  if(ds.utset!==undefined){t.parentNode.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed',c===t));return}
+  if(ds.no){if(nowAfterCutoff(giorno)&&pendingNo!==ds.no){pendingNo=ds.no;return render()}pendingNo=null;return setStato(giorno,ds.no,'no')}
+  if(ds.resta){pendingNo=null;return render()}
+  if(ds.si){return setStato(giorno,ds.si,'si')}
+  if(ds.c){const [id,d]=ds.c.split('|');const b=B(id);const cyc=b.giorni.includes(pd(d).getDay())?['si','no']:['','si'];const cur=stato(d,b);return setStato(d,id,cyc[(cyc.indexOf(cur)+1)%cyc.length])}
+  if(ds.pp){pagaForm={...readPF(),pasti:+ds.pp};return rSheet()}
+  if(ds.pm){pagaForm={...readPF(),metodo:ds.pm};return rSheet()}
+  if(ds.pdel){S.pagamenti=S.pagamenti.filter(p=>p.id!==ds.pdel);save();toast('Pagamento eliminato');return render()}
+  if(ds.bg){t.setAttribute('aria-pressed',t.getAttribute('aria-pressed')!=='true');return}
+  const a=ds.act;if(!a)return;
+  if(a==='prev'){giorno=addSchool(giorno,-1);return render()}
+  if(a==='next'){giorno=addSchool(giorno,1);return render()}
+  if(a==='oggi'){giorno=isSchool(pd(TODAY))?TODAY:addSchool(TODAY,1);return render()}
+  if(a==='mprev'||a==='mnext'){const [y,m]=mese.split('-').map(Number);const d=new Date(y,m-1+(a==='mnext'?1:-1),1);mese=iso(d).slice(0,7);return render()}
+  if(a==='addB'){const v=document.getElementById('addB').value;if(!v)return toast('Scegli un bambino');return setStato(giorno,v,'si')}
+  if(a==='copia'){const txt=document.getElementById('msg').textContent;copy(txt,'Messaggio copiato: incollalo su WhatsApp')}
+  if(a==='copiaDebiti'){const txt=S.bambini.filter(b=>!b.esente).map(b=>({b,c:conto(b)})).filter(x=>x.c.rimasti<0).map(({b,c})=>`${b.nome}: ${-c.rimasti} pasti da pagare (${eur(-c.euro)})`).join('\n');copy(txt,'Elenco copiato')}
+  if(a==='paga'){const pf=readPF();if(!(pf.pasti>0))return toast('Scrivi quanti pasti');S.pagamenti.push({id:'p'+Date.now(),bid:openId,data:pf.data||TODAY,pasti:pf.pasti,importo:pf.metodo==='gratis'?0:pf.pasti*S.prezzo,metodo:pf.metodo,conRetta:pf.conRetta});pagaForm=null;save();toast('Pagamento registrato');return render()}
+  if(a==='salvaB'){
+    const giorni=[...document.querySelectorAll('#b-giorni .chip')].filter(c=>c.getAttribute('aria-pressed')==='true').map(c=>+c.dataset.bg);
+    const data={giorni,dieta:document.getElementById('b-dieta').value.trim(),note:document.getElementById('b-note').value.trim(),esente:document.getElementById('b-esente').checked};
+    Object.assign(B(openId),data);
+    openId=null;save();toast('Salvato');return render()}
+  if(a==='chiudiOk'){const g=G(pendingChiudi);g.chiuso=true;g.motivo=document.getElementById('chiudiNota').value.trim();pendingChiudi=null;save();toast('Giorno tolto');return render()}
+  if(a==='chiudiNo'){pendingChiudi=null;return render()}
+  if(a==='addUt'){const v=document.getElementById('addUt').value.trim();if(!v)return toast('Scrivi il nome');const g=G(giorno);(g.ut??=[]).push({nome:v,pagato:false});save();return render()}
+  if(a==='utSalva'){const nome=document.getElementById('ut-nome').value.trim();if(!nome)return toast('Scrivi il nome');const pagato=document.querySelector('[data-utset="1"]').getAttribute('aria-pressed')==='true';const g=G(openUt.d);g.ut??=[];if(openUt.i==='new')g.ut.push({nome,pagato});else Object.assign(g.ut[+openUt.i],{nome,pagato});openUt=null;save();toast('Salvato');return render()}
+  if(a==='utDel'){G(openUt.d).ut.splice(+openUt.i,1);openUt=null;save();toast('Eliminato');return render()}
+  if(a==='nuovo'){openId='new';return render()}
+  if(a==='reset'){pendingReset=true;return render()}
+  if(a==='resetNo'){pendingReset=false;return render()}
+  if(a==='resetOk'){pendingReset=false;Rette.S.mensa=seed(Rette.S);ensure();save();toast('Dati finti ricaricati');return render()}
+});
+function readPF(){const g=id=>document.getElementById(id);return {pasti:+(g('pf-pasti')?.value||0),data:g('pf-data')?.value||TODAY,metodo:pagaForm?.metodo||'contanti',conRetta:!!g('pf-retta')?.checked}}
+function copy(txt,ok){navigator.clipboard?.writeText(txt).then(()=>toast(ok),()=>selectMsg()) ?? selectMsg()}
+function selectMsg(){const el=document.getElementById('msg');if(el){const r=document.createRange();r.selectNodeContents(el);const s=getSelection();s.removeAllRanges();s.addRange(r)}toast('Tieni premuto sul testo per copiarlo')}
+document.addEventListener('change',e=>{
+  if(!e.target.closest('.mz'))return;ensure();
+  const id=e.target.id;
+  if(id==='chiuso'){G(giorno).chiuso=e.target.checked;save();return render()}
+  if(id==='motivo'){G(giorno).motivo=e.target.value.trim();save();toast('Motivo salvato');return}
+  if(id==='medie'){G(giorno).medie=Math.max(0,+e.target.value||0);save();return render()}
+  if(id==='dieteMedie'){G(giorno).dieteMedie=e.target.value.trim();save();return render()}
+  if(id.startsWith('acc-')){const g=G(giorno);(g.acc??={})[id.slice(4)]=Math.max(0,+e.target.value||0);save();return render()}
+  if(e.target.dataset.bnote){B(e.target.dataset.bnote).note=e.target.value.trim();save();toast('Nota salvata');return}
+  if(id==='noteM'){G(giorno).noteM=e.target.value;save();return}
+  if(id==='noteMese'){(S.noteMese??={})[mese]=e.target.value;save();return}
+  if(id==='noteG'){G(giorno).note=e.target.value;save();return render()}
+  if(id==='set-prezzo'){S.prezzo=Math.max(0,+e.target.value||0);save();return render()}
+  if(id==='set-cutoff'){if(/^\d{2}:\d{2}$/.test(e.target.value))S.cutoff=e.target.value;save();return render()}
+  if(id==='set-minimo'){S.minimo=Math.max(1,+e.target.value||1);save();return render()}
+  if(id==='pf-pasti'){pagaForm=readPF();return rSheet()}
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&(openId||openUt)){openId=null;openUt=null;render()}});
+
+window.Mensa={dopoRender:t=>{if(t==='mensa'){const r=document.getElementById('mzRoot');if(r)delete r.dataset.ok}render()},
+  cardBambino:id=>{try{ensure()}catch(e){return ''}const r=Rette.S.bambini.find(x=>x.id===id);if(!r||!r.mensa||!r.mensa.attivo)return '';const b=px(r);const c=conto(b);
+    return `<section class="card mz"><div class="row spread"><h2>Mensa</h2>${saldoHtml(c,b)}</div><p class="small muted" style="margin:0">${b.esente?'Non paga la mensa.':c.rimasti<0?'In debito di '+eur(-c.euro)+'.':c.fine?'Coperto fino a '+fmtDay(c.fine)+'.':''} Giorni: ${b.giorni.length===5?'tutti':b.giorni.map(x=>GG[x]).join(' ')||'a richiesta'}</p><button class="btn" data-mopen="${b.id}">Apri nella mensa</button></section>`}};
+Rette.render();
+
 })();
 </script>
 
