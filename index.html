@@ -221,9 +221,15 @@ dialog form{padding:18px;display:flex;flex-direction:column;gap:12px}
 <dialog id="dlgWa"><form id="formWa"><div class="row spread"><h2>Promemoria WhatsApp</h2><button type="button" class="btn" id="waClose">Fatto</button></div>
 <p class="small muted" style="margin:0">WhatsApp apre una chat alla volta: tocca “Apri WhatsApp”, premi invio nella chat, poi torna qui per il prossimo.</p>
 <div id="waList" class="months"></div></form></dialog>
-<dialog id="dlgMet"><form id="formMet"><h2>Come ha pagato?</h2><p class="muted" id="metTitle" style="margin:0"></p>
-<div class="row" style="flex-wrap:nowrap"><button type="button" class="btn metbtn" data-metodo="contanti">💶 Contanti</button><button type="button" class="btn metbtn" data-metodo="bonifico">🏦 Bonifico</button></div>
-<button type="button" class="btn ghost" id="metCancel">Annulla</button></form></dialog>
+<dialog id="dlgMet"><form id="formMet"><div class="row spread"><h2 id="metTitle"></h2><button type="button" class="btn ghost" id="metCancel">Chiudi</button></div>
+<p class="muted" id="metInfo" style="margin:0"></p>
+<div id="metPay" class="row" style="flex-wrap:nowrap"><button type="button" class="btn metbtn" data-metodo="contanti">💶 Pagato in contanti</button><button type="button" class="btn metbtn" data-metodo="bonifico">🏦 Pagato con bonifico</button></div>
+<div id="metPaid" class="row"><button type="button" class="btn danger" id="metUnpay">Segna come non pagato</button></div>
+<div class="f" style="border-top:1px solid var(--line);padding-top:12px"><span class="eyebrow">Modifica questo mese</span></div>
+<div class="row" style="flex-wrap:nowrap;align-items:flex-end"><label class="f">Importo del mese (€)<input type="number" id="mImp" min="0" step="0.01" inputmode="decimal"></label><button type="button" class="btn" id="mZero">Non partecipa</button></div>
+<label class="f">Descrizione del mese<input type="text" id="mDesc" autocomplete="off" placeholder="es. assente tutto il mese, solo 2 settimane"></label>
+<div class="row spread"><button type="button" class="btn ghost" id="mReset">Torna alla quota normale</button><button type="submit" class="btn primary">Salva modifiche</button></div>
+</form></dialog>
 <dialog id="dlgCons"><form id="formCons"><h2 id="consTitle">Consegna contanti</h2>
 <p class="small muted" style="margin:0" id="consSaldo"></p>
 <label class="f">Quanto hai consegnato (€)<input type="number" id="cImporto" min="0" step="0.01" inputmode="decimal" required></label>
@@ -317,10 +323,20 @@ function setPagato(b,mo,val,metodo){
   toast((val?'Pagato in '+metodo+': ':'Tolto il pagato: ')+b.nome.replace(' (esempio)','')+', '+mo.nome,()=>{if(prima)b.pagamenti[mo.key]=prima;else delete b.pagamenti[mo.key];save();render();});
 }
 function chiediMetodo(b,mo){
-  $('#metTitle').textContent=b.nome+' · '+mo.nome+' · '+eur(dovuto(b,mo));
+  const p=b.pagamenti[mo.key],e=hasEcc(b,mo);
+  $('#metTitle').textContent=b.nome+' · '+mo.nome;
+  $('#metInfo').innerHTML=(p?'<strong style="color:var(--ok)">Pagato il '+dataIt(p.data)+(p.metodo?' in '+p.metodo:'')+'</strong> · ':'')+'Importo: <strong>'+eur(dovuto(b,mo))+'</strong>'+(e?' (quota normale '+eur(quotaBase(b))+')':'')+(b.esente?' · agevolazione':'');
+  $('#metPay').hidden=!!p;$('#metPaid').hidden=!p;
+  $('#mImp').value=e?b.eccezioni[mo.key]:'';$('#mImp').placeholder=quotaBase(b)+' (normale)';
+  $('#mDesc').value=(b.noteMese&&b.noteMese[mo.key])||'';
   const d=$('#dlgMet');d.dataset.b=b.id;d.dataset.k=mo.key;d.showModal();
 }
-function togglePay(b,mo){if(b.pagamenti[mo.key])setPagato(b,mo,false);else chiediMetodo(b,mo);}
+function togglePay(b,mo){chiediMetodo(b,mo);}
+function salvaMese(b,mo){
+  const v=$('#mImp').value.trim().replace(',','.');b.eccezioni=b.eccezioni||{};
+  if(v==='')delete b.eccezioni[mo.key];else b.eccezioni[mo.key]=+v;
+  const t=$('#mDesc').value.trim();b.noteMese=b.noteMese||{};if(t)b.noteMese[mo.key]=t;else delete b.noteMese[mo.key];
+}
 function importoPag(b,k){const p=b.pagamenti[k];if(p&&p.importo!=null)return +p.importo;const mo=mesi().find(m=>m.key===k);if(mo)return dovuto(b,mo);const[y,m]=k.split('-').map(Number);return b.esente?0:(b.eccezioni&&b.eccezioni[k]!=null?+b.eccezioni[k]:quotaBase(b));}
 function entrate(){const out=[];for(const b of S.bambini)for(const k in b.pagamenti){const p=b.pagamenti[k];if(p.metodo==='contanti')out.push({b,k,imp:importoPag(b,k),data:p.data});}return out.sort((a,b)=>b.data.localeCompare(a.data));}
 function uscite(){return(S.consegne||[]).map(c=>({...c,importo:c.importo!=null?+c.importo:+(c.totale||0)})).sort((a,b)=>b.data.localeCompare(a.data));}
@@ -395,7 +411,7 @@ function vTutti(){
   lista.map(b=>'<tr><td class="name"><button data-open="'+b.id+'">'+esc(b.nome)+'</button><small>'+esc(b.classe||'')+(b.esente?' · agevolazione':' · '+eur(quotaBase(b)))+(b.allergie?' · <span style="color:var(--late)">allergie</span>':'')+'</small></td>'+
     mm.map(mo=>{const st=stato(b,mo),d=dovuto(b,mo),e=hasEcc(b,mo)&&!b.esente;
       const sym=st==='pagato'?'✓':st==='scaduto'?'!':st==='esente'?'–':'';
-      return'<td><button class="cell '+st+(e?' ecc':'')+'" '+(st==='esente'?'disabled ':'')+'data-pay="'+b.id+'|'+mo.key+'" aria-label="'+esc(b.nome)+', '+mo.nome+': '+ETI[st]+', '+eur(d)+'">'+sym+(d>0?'<small>'+Math.round(d)+'€</small>':'')+'</button></td>';}).join('')+
+      return'<td><button class="cell '+st+(e||(b.noteMese&&b.noteMese[mo.key])?' ecc':'')+'" data-pay="'+b.id+'|'+mo.key+'" aria-label="'+esc(b.nome)+', '+mo.nome+': '+ETI[st]+', '+eur(d)+'">'+sym+(d>0?'<small>'+Math.round(d)+'€</small>':'')+'</button></td>';}).join('')+
     '<td><strong>'+eur(totali(b).res)+'</strong></td></tr>').join('')+'</tbody></table></div>'+
   '<p class="small muted">Tocca un mese per segnarlo pagato (o toglierlo). Il giorno viene salvato e lo vedi nella scheda del bambino.</p>'
   :'<p class="empty">Nessun bambino trovato.</p>')+
@@ -426,8 +442,8 @@ function vBambino(){
   (editAmounts?'<p class="small muted" style="margin:0">Scrivi un importo solo nei mesi diversi dal solito (es. 0 se in quel mese non paga). Lascia vuoto per la quota normale.</p>':'')+
   '<div class="months">'+mesi().map(mo=>{const st=stato(b,mo),d=dovuto(b,mo),p=b.pagamenti[mo.key],e=hasEcc(b,mo);
     return'<div class="mrow"><div class="mname"><strong>'+mo.nome+' '+mo.y+'</strong><span><span class="pill '+st+'">'+ETI[st]+'</span>'+(e&&!b.esente?' <span class="pill ecc">eccezione</span>':'')+(p&&p.metodo?' <span class="pill met">'+MET[p.metodo]+'</span>':'')+'</span>'+
-      (showDates&&p?'<label class="small muted">Pagato il <input type="date" data-date="'+mo.key+'" value="'+p.data+'"></label><select data-met="'+mo.key+'" style="width:150px;min-height:34px;padding:4px 8px;font-size:.85rem" aria-label="Metodo"><option value="">Metodo?</option><option value="contanti"'+(p.metodo==='contanti'?' selected':'')+'>Contanti</option><option value="bonifico"'+(p.metodo==='bonifico'?' selected':'')+'>Bonifico</option></select>':'')+'</div>'+
-      '<div class="amt">'+(editAmounts&&!b.esente?'<input type="number" min="0" step="0.01" inputmode="decimal" data-ecc="'+mo.key+'" value="'+(e?b.eccezioni[mo.key]:'')+'" placeholder="'+quotaBase(b)+'" aria-label="Importo '+mo.nome+'">':'<strong>'+eur(d)+'</strong>')+'</div>'+
+      (b.noteMese&&b.noteMese[mo.key]?'<span class="small muted">'+esc(b.noteMese[mo.key])+'</span>':'')+(showDates&&p?'<label class="small muted">Pagato il <input type="date" data-date="'+mo.key+'" value="'+p.data+'"></label><select data-met="'+mo.key+'" style="width:150px;min-height:34px;padding:4px 8px;font-size:.85rem" aria-label="Metodo"><option value="">Metodo?</option><option value="contanti"'+(p.metodo==='contanti'?' selected':'')+'>Contanti</option><option value="bonifico"'+(p.metodo==='bonifico'?' selected':'')+'>Bonifico</option></select>':'')+'</div>'+
+      '<div class="amt">'+(editAmounts&&!b.esente?'<input type="number" min="0" step="0.01" inputmode="decimal" data-ecc="'+mo.key+'" value="'+(e?b.eccezioni[mo.key]:'')+'" placeholder="'+quotaBase(b)+'" aria-label="Importo '+mo.nome+'">':'<button class="btn ghost" style="padding:4px 6px;min-height:0;color:var(--ink)" data-pay="'+b.id+'|'+mo.key+'"><strong>'+eur(d)+'</strong> ✎</button>')+'</div>'+
       '<label class="paybox"><input type="checkbox" data-chk="'+mo.key+'"'+(p?' checked':'')+(d<=0&&!p?' disabled':'')+'>pagato</label></div>';}).join('')+'</div></section>'+
   '<div class="row"><button class="btn primary" data-act="reportOne">Riepilogo di '+esc(b.nome.split(' ')[0])+' · PDF / stampa</button></div>';
 }
@@ -458,7 +474,8 @@ function tabellaAnno(lista,oneId){
   lista.map(b=>{const t=totali(b);return'<tr><td class="l"><strong>'+esc(b.nome)+'</strong>'+(b.allergie?'<br><span style="color:#a52a17">Allergie: '+esc(b.allergie)+'</span>':'')+(b.note?'<br><span style="color:#666">'+esc(b.note)+'</span>':'')+(oneId&&recapiti(b).length?'<br><span style="color:#444">'+recapiti(b).map(r=>esc(r.nome)+' '+esc(r.tel)).join(' · ')+'</span>':'')+(oneId&&(b.delegati||[]).length?'<br><span style="color:#444">Delegati: '+b.delegati.map(r=>esc(r.nome)+' '+esc(r.tel)).join(' · ')+'</span>':'')+'</td><td>'+esc(b.classe||'')+'</td><td class="l">'+esc(servNomi(b))+'</td><td>'+(b.esente?'Agevolaz.':eur(quotaBase(b)))+'</td>'+
     mm.map(mo=>{const st=stato(b,mo),d=dovuto(b,mo),p=b.pagamenti[mo.key],e=hasEcc(b,mo)&&!b.esente;
       if(st==='pagato')return'<td class="p">✓ '+dataIt(p.data).slice(0,5)+(p.metodo?' '+(p.metodo==='contanti'?'C':'B'):'')+(e?'<br>'+eur(d)+'*':'')+'</td>';
-      if(st==='esente')return'<td class="n">–</td>';
+      if(st==='esente')return'<td class="n">'+(b.noteMese&&b.noteMese[mo.key]?esc(b.noteMese[mo.key]):'–')+'</td>';
+      if(b.noteMese&&b.noteMese[mo.key]&&st!=='pagato')return'<td class="n" title="">'+(d>0?eur(d)+'<br>':'')+esc(b.noteMese[mo.key])+'</td>';
       return'<td class="'+(st==='scaduto'?'s':'')+'">'+(st==='scaduto'?'✗ ':'')+eur(d)+(e?'*':'')+'</td>';}).join('')+
     '<td>'+eur(t.dov)+'</td><td>'+eur(t.pag)+'</td><td><strong>'+eur(t.res)+'</strong></td></tr>';}).join('')+'</tbody></table></div>';
 }
@@ -514,9 +531,13 @@ $('#formChild').addEventListener('submit',e=>{e.preventDefault();
   save();dlg.close();if(!editId)tab='bambino';render();toast(editId?'Modifiche salvate':'Bambino aggiunto');});
 
 /* ---------- metodo ---------- */
-document.querySelectorAll('.metbtn').forEach(x=>x.onclick=()=>{const d=$('#dlgMet');const b=S.bambini.find(y=>y.id===d.dataset.b),mo=mesi().find(m=>m.key===d.dataset.k);d.close();if(b&&mo)setPagato(b,mo,true,x.dataset.metodo);});
+function metCtx(){const d=$('#dlgMet');return[S.bambini.find(y=>y.id===d.dataset.b),mesi().find(m=>m.key===d.dataset.k)];}
+document.querySelectorAll('.metbtn').forEach(x=>x.onclick=()=>{const[b,mo]=metCtx();if(!b||!mo)return;salvaMese(b,mo);if(dovuto(b,mo)<=0){save();$('#dlgMet').close();render();toast('Importo 0: non c’è niente da pagare');return;}$('#dlgMet').close();setPagato(b,mo,true,x.dataset.metodo);});
+$('#metUnpay').onclick=()=>{const[b,mo]=metCtx();$('#dlgMet').close();if(b&&mo)setPagato(b,mo,false);};
+$('#mZero').onclick=()=>{$('#mImp').value='0';if(!$('#mDesc').value)$('#mDesc').value='Non partecipa';};
+$('#mReset').onclick=()=>{$('#mImp').value='';};
 $('#metCancel').onclick=()=>$('#dlgMet').close();
-$('#formMet').addEventListener('submit',e=>e.preventDefault());
+$('#formMet').addEventListener('submit',e=>{e.preventDefault();const[b,mo]=metCtx();if(!b||!mo)return;salvaMese(b,mo);save();$('#dlgMet').close();render();toast('Modifiche salvate: '+mo.nome+' '+eur(dovuto(b,mo)));});
 
 /* ---------- consegne contanti ---------- */
 let consId=null;
