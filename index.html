@@ -217,6 +217,14 @@ dialog form{padding:18px;display:flex;flex-direction:column;gap:12px}
 <dialog id="dlgMet"><form id="formMet"><h2>Come ha pagato?</h2><p class="muted" id="metTitle" style="margin:0"></p>
 <div class="row" style="flex-wrap:nowrap"><button type="button" class="btn metbtn" data-metodo="contanti">💶 Contanti</button><button type="button" class="btn metbtn" data-metodo="bonifico">🏦 Bonifico</button></div>
 <button type="button" class="btn ghost" id="metCancel">Annulla</button></form></dialog>
+<dialog id="dlgCons"><form id="formCons"><h2 id="consTitle">Consegna contanti</h2>
+<p class="small muted" style="margin:0" id="consSaldo"></p>
+<label class="f">Quanto hai consegnato (€)<input type="number" id="cImporto" min="0" step="0.01" inputmode="decimal" required></label>
+<label class="f">A chi<input type="text" id="cA" placeholder="es. coordinatrice Paola" autocomplete="off" list="cAList"></label><datalist id="cAList"></datalist>
+<label class="f">Data<input type="date" id="cData" required></label>
+<label class="f">Note (facoltative)<input type="text" id="cNote" autocomplete="off" placeholder="es. ricevuta firmata"></label>
+<div class="row spread"><button type="button" class="btn danger" id="cDelete">Elimina</button><div class="row"><button type="button" class="btn" id="cCancel">Annulla</button><button type="submit" class="btn primary">Salva</button></div></div>
+</form></dialog>
 <section id="report" hidden></section>
 <div id="toastHost"></div>
 
@@ -247,7 +255,7 @@ function esempio(){
   s.servizi=[{id:'d5',nome:'Doposcuola 5 giorni',costo:120},{id:'d3',nome:'Doposcuola 3 giorni',costo:80},{id:'pre',nome:'Pre-scuola',costo:25}];
   const y=s.annoInizio, k=m=>(m>=9?y:y+1)+'-'+pad(m);
   const B=(nome,classe,serv,extra={})=>Object.assign({id:uid(),nome,classe,servizi:serv,costo:null,esente:false,note:'',allergie:'',recapiti:[],eccezioni:{},pagamenti:{}},extra);
-  let alt=0;const pag=(...mm)=>Object.fromEntries(mm.map(m=>[k(m),{data:(m>=9?y:y+1)+'-'+pad(m)+'-0'+(3+m%5),metodo:(alt++%2?'bonifico':'contanti'),consegnato:m===9?(m>=9?y:y+1)+'-09-30':null}]));
+  let alt=0;const pag=(...mm)=>Object.fromEntries(mm.map(m=>[k(m),{data:(m>=9?y:y+1)+'-'+pad(m)+'-0'+(3+m%5),metodo:(alt++%2?'bonifico':'contanti')}]));
   s.bambini=[
     B('Giulia Rossi (esempio)','2A',['d5'],{pagamenti:pag(9,10),allergie:'Intollerante al lattosio',recapiti:[{nome:'Mamma Laura (esempio)',tel:''},{nome:'Nonno Piero (esempio)',tel:''}],delegati:[{nome:'Zia Carla (esempio)',tel:''}]}),
     B('Luca Bianchi (esempio)','2A',['d3'],{pagamenti:pag(9)}),
@@ -257,6 +265,7 @@ function esempio(){
     B('Leonardo Ricci (esempio)','4C',['d5','pre'],{pagamenti:{}}),
     B('Emma Marino (esempio)','1A',['d3'],{pagamenti:pag(9,10)}),
   ];
+  s.consegne=[{id:uid(),data:y+'-10-01',importo:100,a:'Coordinatrice Paola (esempio)',note:''}];
   s.note=[{id:uid(),testo:'Esempio di nota: ricordare ai genitori la riunione di venerdì.',data:isoOggi()}];
   return s;
 }
@@ -295,7 +304,7 @@ function scaduti(){const out=[];for(const b of ordinati()){const mm=mesi().filte
 
 function setPagato(b,mo,val,metodo){
   const prima=b.pagamenti[mo.key]?{...b.pagamenti[mo.key]}:null;
-  if(val)b.pagamenti[mo.key]={data:isoOggi(),metodo:metodo,importo:dovuto(b,mo),consegnato:null};else delete b.pagamenti[mo.key];
+  if(val)b.pagamenti[mo.key]={data:isoOggi(),metodo:metodo,importo:dovuto(b,mo)};else delete b.pagamenti[mo.key];
   save();render();
   toast((val?'Pagato in '+metodo+': ':'Tolto il pagato: ')+b.nome.replace(' (esempio)','')+', '+mo.nome,()=>{if(prima)b.pagamenti[mo.key]=prima;else delete b.pagamenti[mo.key];save();render();});
 }
@@ -305,7 +314,9 @@ function chiediMetodo(b,mo){
 }
 function togglePay(b,mo){if(b.pagamenti[mo.key])setPagato(b,mo,false);else chiediMetodo(b,mo);}
 function importoPag(b,k){const p=b.pagamenti[k];if(p&&p.importo!=null)return +p.importo;const mo=mesi().find(m=>m.key===k);if(mo)return dovuto(b,mo);const[y,m]=k.split('-').map(Number);return b.esente?0:(b.eccezioni&&b.eccezioni[k]!=null?+b.eccezioni[k]:quotaBase(b));}
-function cassa(){const out=[];for(const b of S.bambini)for(const k in b.pagamenti){const p=b.pagamenti[k];if(p.metodo==='contanti'&&!p.consegnato)out.push({b,k,imp:importoPag(b,k)});}return out;}
+function entrate(){const out=[];for(const b of S.bambini)for(const k in b.pagamenti){const p=b.pagamenti[k];if(p.metodo==='contanti')out.push({b,k,imp:importoPag(b,k),data:p.data});}return out.sort((a,b)=>b.data.localeCompare(a.data));}
+function uscite(){return(S.consegne||[]).map(c=>({...c,importo:c.importo!=null?+c.importo:+(c.totale||0)})).sort((a,b)=>b.data.localeCompare(a.data));}
+function saldo(){return entrate().reduce((t,x)=>t+x.imp,0)-uscite().reduce((t,x)=>t+x.importo,0);}
 const MET={contanti:'Contanti',bonifico:'Bonifico'};
 
 /* ---------- interfaccia ---------- */
@@ -355,12 +366,15 @@ function vHome(){
 }
 
 function vCassa(){
-  const c=cassa(),tot=c.reduce((t,x)=>t+x.imp,0),ult=(S.consegne||[])[0];
-  return'<section class="card cassa"><div class="row spread"><div class="who"><span class="eyebrow">Contanti da consegnare</span><b class="big">'+eur(tot)+'</b><span class="small muted">'+c.length+' '+(c.length===1?'pagamento':'pagamenti')+' in contanti'+(ult?' · ultima consegna il '+dataIt(ult.data)+' ('+eur(ult.totale)+')':'')+'</span></div>'+
-  (c.length?'<div id="cassaRow" class="row"><button class="btn primary" data-act="consegna1">Consegnati al coordinatore</button></div>':'')+'</div>'+
-  (c.length?'<details><summary class="small" style="cursor:pointer">Vedi dettaglio</summary><ul class="list small" style="margin-top:8px">'+c.sort((a,b)=>a.b.nome.localeCompare(b.b.nome,'it')).map(x=>{const[y,m]=x.k.split('-').map(Number);return'<li><span>'+esc(x.b.nome)+' · '+MESI[m-1].toLowerCase()+' (pagato il '+dataIt(x.b.pagamenti[x.k].data)+')</span><strong>'+eur(x.imp)+'</strong></li>';}).join('')+'</ul></details>':'')+
-  ((S.consegne||[]).length?'<details><summary class="small" style="cursor:pointer">Consegne fatte</summary><ul class="list small" style="margin-top:8px">'+S.consegne.slice(0,24).map(x=>'<li><span>'+dataIt(x.data)+' · '+x.n+' pagamenti</span><strong>'+eur(x.totale)+'</strong></li>').join('')+'</ul></details>':'')+
-  '</section>';
+  const sal=saldo(),u=uscite(),e=entrate(),ult=u[0];
+  return'<section class="card cassa"><div class="row spread"><div class="who"><span class="eyebrow">Contanti in cassa</span><b class="big">'+eur(sal)+'</b><span class="small muted">'+(ult?'Ultima consegna: '+eur(ult.importo)+' a '+esc(ult.a||'—')+' il '+dataIt(ult.data):'Nessuna consegna ancora')+'</span></div>'+
+  '<button class="btn primary" data-act="consegna">Consegna contanti</button></div>'+
+  '<details><summary class="small" style="cursor:pointer">Entrate e uscite in contanti</summary>'+
+  '<p class="small" style="margin:8px 0 4px"><strong>Uscite (consegne)</strong> · totale '+eur(u.reduce((t,x)=>t+x.importo,0))+'</p>'+
+  (u.length?'<ul class="list small">'+u.map(x=>'<li><span>'+dataIt(x.data)+' · a '+esc(x.a||'—')+(x.note?' · '+esc(x.note):'')+'</span><strong>−'+eur(x.importo)+'</strong><button class="btn ghost" data-editcons="'+x.id+'">Modifica</button></li>').join('')+'</ul>':'<p class="small muted" style="margin:0">Nessuna consegna.</p>')+
+  '<p class="small" style="margin:12px 0 4px"><strong>Entrate (pagamenti in contanti)</strong> · totale '+eur(e.reduce((t,x)=>t+x.imp,0))+'</p>'+
+  (e.length?'<ul class="list small">'+e.map(x=>{const[y,m]=x.k.split('-').map(Number);return'<li><span>'+dataIt(x.data)+' · '+esc(x.b.nome)+' · '+MESI[m-1].toLowerCase()+'</span><strong>+'+eur(x.imp)+'</strong></li>';}).join('')+'</ul>':'<p class="small muted" style="margin:0">Nessun pagamento in contanti.</p>')+
+  '</details></section>';
 }
 function vTutti(){
   const mm=mesi(), mc=meseCorrente();
@@ -403,7 +417,7 @@ function vBambino(){
   '<section class="card"><div class="row spread"><h2>Mesi</h2><div class="row"><label class="chk small"><input type="checkbox" id="showDates"'+(showDates?' checked':'')+'> Mostra date</label><label class="chk small"><input type="checkbox" id="editAmt"'+(editAmounts?' checked':'')+'> Cambia importi</label></div></div>'+
   (editAmounts?'<p class="small muted" style="margin:0">Scrivi un importo solo nei mesi diversi dal solito (es. 0 se in quel mese non paga). Lascia vuoto per la quota normale.</p>':'')+
   '<div class="months">'+mesi().map(mo=>{const st=stato(b,mo),d=dovuto(b,mo),p=b.pagamenti[mo.key],e=hasEcc(b,mo);
-    return'<div class="mrow"><div class="mname"><strong>'+mo.nome+' '+mo.y+'</strong><span><span class="pill '+st+'">'+ETI[st]+'</span>'+(e&&!b.esente?' <span class="pill ecc">eccezione</span>':'')+(p&&p.metodo?' <span class="pill met">'+MET[p.metodo]+(p.metodo==='contanti'&&p.consegnato?' · consegnato':'')+'</span>':'')+'</span>'+
+    return'<div class="mrow"><div class="mname"><strong>'+mo.nome+' '+mo.y+'</strong><span><span class="pill '+st+'">'+ETI[st]+'</span>'+(e&&!b.esente?' <span class="pill ecc">eccezione</span>':'')+(p&&p.metodo?' <span class="pill met">'+MET[p.metodo]+'</span>':'')+'</span>'+
       (showDates&&p?'<label class="small muted">Pagato il <input type="date" data-date="'+mo.key+'" value="'+p.data+'"></label><select data-met="'+mo.key+'" style="width:150px;min-height:34px;padding:4px 8px;font-size:.85rem" aria-label="Metodo"><option value="">Metodo?</option><option value="contanti"'+(p.metodo==='contanti'?' selected':'')+'>Contanti</option><option value="bonifico"'+(p.metodo==='bonifico'?' selected':'')+'>Bonifico</option></select>':'')+'</div>'+
       '<div class="amt">'+(editAmounts&&!b.esente?'<input type="number" min="0" step="0.01" inputmode="decimal" data-ecc="'+mo.key+'" value="'+(e?b.eccezioni[mo.key]:'')+'" placeholder="'+quotaBase(b)+'" aria-label="Importo '+mo.nome+'">':'<strong>'+eur(d)+'</strong>')+'</div>'+
       '<label class="paybox"><input type="checkbox" data-chk="'+mo.key+'"'+(p?' checked':'')+(d<=0&&!p?' disabled':'')+'>pagato</label></div>';}).join('')+'</div></section>'+
@@ -496,6 +510,31 @@ document.querySelectorAll('.metbtn').forEach(x=>x.onclick=()=>{const d=$('#dlgMe
 $('#metCancel').onclick=()=>$('#dlgMet').close();
 $('#formMet').addEventListener('submit',e=>e.preventDefault());
 
+/* ---------- consegne contanti ---------- */
+let consId=null;
+function openCons(id){
+  consId=id;const c=id?(S.consegne||[]).find(x=>x.id===id):null;
+  $('#consTitle').textContent=c?'Modifica consegna':'Consegna contanti';
+  $('#consSaldo').textContent='In cassa adesso: '+eur(saldo())+(c?' (questa consegna compresa: '+eur(saldo()+(+c.importo||+c.totale||0))+')':'');
+  const sal=Math.max(0,saldo());
+  $('#cImporto').value=c?(c.importo!=null?c.importo:c.totale):(sal?sal.toFixed(2):'');
+  const nomi=[...new Set((S.consegne||[]).map(x=>x.a).filter(Boolean))];
+  $('#cAList').innerHTML=nomi.map(n=>'<option value="'+esc(n)+'">').join('');
+  $('#cA').value=c?(c.a||''):(uscite()[0]?.a||'');
+  $('#cData').value=c?c.data:isoOggi();$('#cNote').value=c?(c.note||''):'';
+  const d=$('#cDelete');d.hidden=!c;d.textContent='Elimina';d.dataset.armed='';
+  $('#dlgCons').showModal();
+}
+$('#cCancel').onclick=()=>$('#dlgCons').close();
+$('#cDelete').onclick=e=>{const d=e.currentTarget;if(!d.dataset.armed){d.dataset.armed='1';d.textContent='Tocca ancora per eliminare';return;}
+  S.consegne=S.consegne.filter(x=>x.id!==consId);save();$('#dlgCons').close();render();toast('Consegna eliminata');};
+$('#formCons').addEventListener('submit',e=>{e.preventDefault();
+  const imp=+($('#cImporto').value.replace(',','.'))||0;if(imp<=0){toast('Scrivi quanto hai consegnato');return;}
+  const data={importo:imp,a:$('#cA').value.trim(),data:$('#cData').value||isoOggi(),note:$('#cNote').value.trim()};
+  S.consegne=S.consegne||[];
+  if(consId){const c=S.consegne.find(x=>x.id===consId);delete c.totale;delete c.n;Object.assign(c,data);}else S.consegne.unshift({id:uid(),...data});
+  save();$('#dlgCons').close();render();toast((consId?'Consegna aggiornata. ':'Consegna registrata: −'+eur(imp)+'. ')+'In cassa: '+eur(saldo()));});
+
 /* ---------- WhatsApp ---------- */
 function telWa(t){let d=String(t||'').replace(/[^\d+]/g,'');if(d.startsWith('+'))d=d.slice(1);else if(d.startsWith('00'))d=d.slice(2);else if(/^3\d{8,9}$/.test(d)||/^0\d{5,10}$/.test(d))d='39'+d;return d.replace(/\D/g,'');}
 function elenco(a){return a.length<2?a.join(''):a.slice(0,-1).join(', ')+' e '+a[a.length-1];}
@@ -541,7 +580,8 @@ function importa(file){
 document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{tab=t.dataset.tab;render();scrollTo(0,0);});
 const app=$('#app');
 app.addEventListener('click',e=>{
-  const t=e.target.closest('[data-pay],[data-open],[data-act],[data-delnote],[data-delserv]');if(!t)return;
+  const t=e.target.closest('[data-pay],[data-open],[data-act],[data-delnote],[data-delserv],[data-editcons]');if(!t)return;
+  if(t.dataset.editcons){openCons(t.dataset.editcons);return;}
   if(t.dataset.pay){const[id,k]=t.dataset.pay.split('|');const b=S.bambini.find(x=>x.id===id),mo=mesi().find(m=>m.key===k);if(b&&mo)togglePay(b,mo);return;}
   if(t.dataset.open){selId=t.dataset.open;tab='bambino';render();scrollTo(0,0);return;}
   if(t.dataset.delnote){S.note=S.note.filter(n=>n.id!==t.dataset.delnote);save();render();return;}
@@ -551,8 +591,7 @@ app.addEventListener('click',e=>{
   if(a==='add')openChild(null);
   else if(a==='edit')openChild(selId);
   else if(a==='wa')openWa();
-  else if(a==='consegna1'){const tot=cassa().reduce((t,x)=>t+x.imp,0);$('#cassaRow').innerHTML='<span class="small">Hai consegnato '+eur(tot)+'? Il totale torna a zero.</span><button class="btn primary" data-act="consegna2">Sì, consegnati</button><button class="btn" data-act="wipe0">No</button>';}
-  else if(a==='consegna2'){const c=cassa(),oggi=isoOggi(),tot=c.reduce((t,x)=>t+x.imp,0);c.forEach(x=>x.b.pagamenti[x.k].consegnato=oggi);S.consegne=[{id:uid(),data:oggi,totale:tot,n:c.length}].concat(S.consegne||[]);save();render();toast('Consegna registrata: '+eur(tot)+'. Totale contanti azzerato.');}
+  else if(a==='consegna')openCons(null);
   else if(a==='msgReset'){S.messaggioWa=MSG_DEF;save();render();}
   else if(a==='report')openReport();
   else if(a==='reportOne')openReport(selId);
@@ -578,7 +617,7 @@ app.addEventListener('change',e=>{const t=e.target;const b=S.bambini.find(x=>x.i
   else if(t.id==='showDates'){showDates=t.checked;render();}
   else if(t.id==='editAmt'){editAmounts=t.checked;render();}
   else if(t.dataset.chk&&b){const mo=mesi().find(m=>m.key===t.dataset.chk);t.checked=!!b.pagamenti[mo.key];togglePay(b,mo);}
-  else if(t.dataset.met&&b){const p=b.pagamenti[t.dataset.met];p.metodo=t.value;if(t.value!=='contanti')p.consegnato=null;save();render();toast('Metodo aggiornato');}
+  else if(t.dataset.met&&b){const p=b.pagamenti[t.dataset.met];p.metodo=t.value;save();render();toast('Metodo aggiornato');}
   else if(t.dataset.date&&b){if(t.value){b.pagamenti[t.dataset.date].data=t.value;save();toast('Data aggiornata');}}
   else if(t.dataset.ecc&&b){const v=t.value.trim().replace(',','.');if(v==='')delete b.eccezioni[t.dataset.ecc];else b.eccezioni[t.dataset.ecc]=+v;save();render();}
   else if(t.id==='sAnno'){S.annoInizio=+t.value;save();render();}
