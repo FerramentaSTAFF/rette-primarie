@@ -234,18 +234,18 @@ function annoCorrente(){const n=new Date();return n.getMonth()>=8?n.getFullYear(
 function base(){return{versione:1,annoInizio:annoCorrente(),mesiAttivi:[9,10,11,12,1,2,3,4,5,6],giornoScadenza:10,servizi:[],bambini:[],note:[],ultimoBackup:null,esempio:false,messaggioWa:MSG_DEF};}
 function esempio(){
   const s=base(); s.esempio=true;
-  s.servizi=[{id:'mensa',nome:'Mensa',costo:60},{id:'dopo',nome:'Doposcuola',costo:80},{id:'pre',nome:'Pre-scuola',costo:25}];
+  s.servizi=[{id:'d5',nome:'Doposcuola 5 giorni',costo:120},{id:'d3',nome:'Doposcuola 3 giorni',costo:80},{id:'pre',nome:'Pre-scuola',costo:25}];
   const y=s.annoInizio, k=m=>(m>=9?y:y+1)+'-'+pad(m);
   const B=(nome,classe,serv,extra={})=>Object.assign({id:uid(),nome,classe,servizi:serv,costo:null,esente:false,note:'',allergie:'',recapiti:[],eccezioni:{},pagamenti:{}},extra);
   const pag=(...mm)=>Object.fromEntries(mm.map(m=>[k(m),{data:(m>=9?y:y+1)+'-'+pad(m)+'-0'+(3+m%5)}]));
   s.bambini=[
-    B('Giulia Rossi (esempio)','2A',['mensa','dopo'],{pagamenti:pag(9,10),allergie:'Intollerante al lattosio',recapiti:[{nome:'Mamma Laura (esempio)',tel:''},{nome:'Nonno Piero (esempio)',tel:''}],delegati:[{nome:'Zia Carla (esempio)',tel:''}]}),
-    B('Luca Bianchi (esempio)','2A',['mensa'],{pagamenti:pag(9)}),
-    B('Sofia Esposito (esempio)','3B',['mensa','dopo'],{esente:true,note:'Agevolazione comunale'}),
-    B('Matteo Romano (esempio)','3B',['dopo'],{costo:70,note:'Quota ridotta: fratello iscritto',pagamenti:pag(9,10)}),
-    B('Aurora Colombo (esempio)','1A',['mensa','pre'],{eccezioni:{[k(12)]:40},note:'Dicembre: mensa ridotta per le vacanze',pagamenti:pag(9,10)}),
-    B('Leonardo Ricci (esempio)','4C',['mensa','dopo','pre'],{pagamenti:{}}),
-    B('Emma Marino (esempio)','1A',['mensa'],{pagamenti:pag(9,10)}),
+    B('Giulia Rossi (esempio)','2A',['d5'],{pagamenti:pag(9,10),allergie:'Intollerante al lattosio',recapiti:[{nome:'Mamma Laura (esempio)',tel:''},{nome:'Nonno Piero (esempio)',tel:''}],delegati:[{nome:'Zia Carla (esempio)',tel:''}]}),
+    B('Luca Bianchi (esempio)','2A',['d3'],{pagamenti:pag(9)}),
+    B('Sofia Esposito (esempio)','3B',['d5'],{esente:true,note:'Agevolazione comunale'}),
+    B('Matteo Romano (esempio)','3B',['d3'],{costo:70,note:'Quota ridotta: fratello iscritto',pagamenti:pag(9,10)}),
+    B('Aurora Colombo (esempio)','1A',['d3','pre'],{eccezioni:{[k(12)]:60},note:'Dicembre: quota ridotta per le vacanze',pagamenti:pag(9,10)}),
+    B('Leonardo Ricci (esempio)','4C',['d5','pre'],{pagamenti:{}}),
+    B('Emma Marino (esempio)','1A',['d3'],{pagamenti:pag(9,10)}),
   ];
   s.note=[{id:uid(),testo:'Esempio di nota: ricordare ai genitori la riunione di venerdì.',data:isoOggi()}];
   return s;
