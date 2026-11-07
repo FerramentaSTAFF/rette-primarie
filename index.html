@@ -241,6 +241,13 @@ dialog form{padding:18px;display:flex;flex-direction:column;gap:12px}
 <label class="f">Note (facoltative)<input type="text" id="cNote" autocomplete="off" placeholder="es. ricevuta firmata"></label>
 <div class="row spread"><button type="button" class="btn danger" id="cDelete">Elimina</button><div class="row"><button type="button" class="btn" id="cCancel">Annulla</button><button type="submit" class="btn primary">Salva</button></div></div>
 </form></dialog>
+<dialog id="dlgClasse"><form id="formClasse"><h2 id="clTitle">Crea classe</h2>
+<label class="f">Nome della classe<input type="text" id="clNome" required autocomplete="off" placeholder="es. 3A"></label>
+<input type="search" id="clCerca" placeholder="Cerca bambino" autocomplete="off" aria-label="Cerca bambino">
+<div class="row spread"><span class="small muted" id="clConta"></span><button type="button" class="btn ghost" id="clSoloSenza">Mostra solo senza classe</button></div>
+<div id="clLista" class="months" style="max-height:45dvh;overflow:auto;border:1px solid var(--line);border-radius:10px;padding:4px 10px"></div>
+<div class="row spread"><button type="button" class="btn danger" id="clDelete">Elimina classe</button><div class="row"><button type="button" class="btn" id="clCancel">Annulla</button><button type="submit" class="btn primary">Salva</button></div></div>
+</form></dialog>
 <section id="report" hidden></section>
 <div id="toastHost"></div>
 
@@ -478,6 +485,9 @@ function vAltro(){
   '<label class="f">Si paga entro il giorno<input type="number" id="sGiorno" min="1" max="31" value="'+S.giornoScadenza+'"></label></div>'+
   '<div class="f"><span class="eyebrow">Mesi in cui si paga</span><div class="row">'+ORDINE.map(m=>'<label class="chk small"><input type="checkbox" data-mese="'+m+'"'+(S.mesiAttivi.includes(m)?' checked':'')+'> '+MESI[m-1].slice(0,3)+'</label>').join('')+'</div></div>'+
   '<p class="small muted" style="margin:0">Quando inizia il nuovo anno basta cambiare l’anno qui: i bambini restano, i mesi ripartono da zero e quelli vecchi restano salvati.</p></section>'+
+  '<section class="card"><div class="row spread"><h2>Classi</h2><button class="btn primary" data-act="classe">+ Crea classe</button></div>'+
+  (()=>{const cl={};S.bambini.forEach(b=>{if(b.classe)cl[b.classe]=(cl[b.classe]||0)+1;});const k=Object.keys(cl).sort((a,b)=>a.localeCompare(b,'it',{numeric:true}));const senza=S.bambini.filter(b=>!b.classe).length;
+    return(k.length?'<ul class="list">'+k.map(c=>'<li><span><strong>'+esc(c)+'</strong> <span class="small muted">'+cl[c]+' bambini</span></span><button class="btn" data-classe="'+esc(c)+'">Modifica</button></li>').join('')+'</ul>':'<p class="small muted" style="margin:0">Nessuna classe ancora. Creane una e seleziona i bambini che ne fanno parte.</p>')+(senza&&k.length?'<p class="small muted" style="margin:0">'+senza+' bambini senza classe.</p>':'');})()+'</section>'+
   '<section class="card"><h2>Servizi e prezzi</h2><p class="small muted" style="margin:0">La quota di ogni bambino è la somma dei suoi servizi, a meno che tu non scriva una quota personalizzata nella sua scheda.</p>'+
   '<ul class="list">'+S.servizi.map(s=>'<li><input type="text" data-snome="'+s.id+'" value="'+esc(s.nome)+'" style="flex:2;width:auto" aria-label="Nome servizio"><input type="number" data-scosto="'+s.id+'" value="'+s.costo+'" min="0" step="0.01" inputmode="decimal" style="flex:1;width:auto;max-width:110px" aria-label="Prezzo mensile"><button class="btn ghost" data-delserv="'+s.id+'">Elimina</button></li>').join('')+'</ul>'+
   '<form id="formServ" class="row" style="flex-wrap:nowrap"><input type="text" id="nsNome" placeholder="Nuovo servizio" autocomplete="off" style="flex:2"><input type="number" id="nsCosto" placeholder="€/mese" min="0" step="0.01" inputmode="decimal" style="flex:1;max-width:110px"><button class="btn primary" type="submit">Aggiungi</button></form></section>'+
@@ -603,6 +613,30 @@ $('#formCons').addEventListener('submit',e=>{e.preventDefault();
   if(consId){const c=S.consegne.find(x=>x.id===consId);delete c.totale;delete c.n;Object.assign(c,data);}else S.consegne.unshift({id:uid(),...data});
   save();$('#dlgCons').close();render();toast((consId?'Consegna aggiornata. ':'Consegna registrata: −'+eur(imp)+'. ')+'In cassa: '+eur(saldo()));});
 
+/* ---------- classi ---------- */
+let clOrig=null,clSel=new Set(),clSoloSenza=false;
+function drawClasse(){
+  const q=$('#clCerca').value.trim().toLowerCase();
+  $('#clLista').innerHTML=ordinati().filter(b=>(!q||b.nome.toLowerCase().includes(q))&&(!clSoloSenza||!b.classe||clSel.has(b.id))).map(b=>'<label class="chk" style="padding:8px 0;border-top:1px solid var(--line)"><input type="checkbox" data-clb="'+b.id+'"'+(clSel.has(b.id)?' checked':'')+'><span style="flex:1">'+esc(b.nome)+'</span>'+(b.classe&&b.classe!==clOrig?'<span class="pill futuro">'+esc(b.classe)+'</span>':'')+'</label>').join('')||'<p class="small muted">Nessun bambino.</p>';
+  $('#clConta').textContent=clSel.size+' selezionati';
+  $('#clSoloSenza').textContent=clSoloSenza?'Mostra tutti':'Mostra solo senza classe';
+}
+function openClasse(nome){
+  clOrig=nome||null;clSel=new Set(nome?S.bambini.filter(b=>b.classe===nome).map(b=>b.id):[]);clSoloSenza=!nome;
+  $('#clTitle').textContent=nome?'Classe '+nome:'Crea classe';$('#clNome').value=nome||'';$('#clCerca').value='';
+  const d=$('#clDelete');d.hidden=!nome;d.textContent='Elimina classe';d.dataset.armed='';
+  drawClasse();$('#dlgClasse').showModal();
+}
+$('#clLista').addEventListener('change',e=>{const id=e.target.dataset.clb;if(!id)return;e.target.checked?clSel.add(id):clSel.delete(id);$('#clConta').textContent=clSel.size+' selezionati';});
+$('#clCerca').addEventListener('input',drawClasse);
+$('#clSoloSenza').onclick=()=>{clSoloSenza=!clSoloSenza;drawClasse();};
+$('#clCancel').onclick=()=>$('#dlgClasse').close();
+$('#clDelete').onclick=e=>{const d=e.currentTarget;if(!d.dataset.armed){d.dataset.armed='1';d.textContent='Tocca ancora: i bambini restano, senza classe';return;}
+  S.bambini.forEach(b=>{if(b.classe===clOrig)b.classe='';});save();$('#dlgClasse').close();render();toast('Classe eliminata');};
+$('#formClasse').addEventListener('submit',e=>{e.preventDefault();const n=$('#clNome').value.trim().toUpperCase();if(!n)return;
+  S.bambini.forEach(b=>{if(clSel.has(b.id))b.classe=n;else if(b.classe===clOrig||b.classe===n)b.classe='';});
+  save();$('#dlgClasse').close();render();toast('Classe '+n+': '+clSel.size+' bambini');});
+
 /* ---------- WhatsApp ---------- */
 function telWa(t){let d=String(t||'').replace(/[^\d+]/g,'');if(d.startsWith('+'))d=d.slice(1);else if(d.startsWith('00'))d=d.slice(2);else if(/^3\d{8,9}$/.test(d)||/^0\d{5,10}$/.test(d))d='39'+d;return d.replace(/\D/g,'');}
 function elenco(a){return a.length<2?a.join(''):a.slice(0,-1).join(', ')+' e '+a[a.length-1];}
@@ -648,7 +682,8 @@ function importa(file){
 document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{tab=t.dataset.tab;render();scrollTo(0,0);});
 const app=$('#app');
 app.addEventListener('click',e=>{
-  const t=e.target.closest('[data-pay],[data-open],[data-act],[data-delnote],[data-delserv],[data-editcons]');if(!t)return;
+  const t=e.target.closest('[data-pay],[data-open],[data-act],[data-delnote],[data-delserv],[data-editcons],[data-classe]');if(!t)return;
+  if(t.dataset.classe){openClasse(t.dataset.classe);return;}
   if(t.dataset.editcons){openCons(t.dataset.editcons);return;}
   if(t.dataset.pay){const[id,k]=t.dataset.pay.split('|');const b=S.bambini.find(x=>x.id===id),mo=mesi().find(m=>m.key===k);if(b&&mo)togglePay(b,mo);return;}
   if(t.dataset.open){selId=t.dataset.open;tab='bambino';render();scrollTo(0,0);return;}
@@ -660,6 +695,7 @@ app.addEventListener('click',e=>{
   else if(a==='edit')openChild(selId);
   else if(a==='wa')openWa();
   else if(a==='consegna')openCons(null);
+  else if(a==='classe')openClasse(null);
   else if(a==='msgReset'){S.messaggioWa=MSG_DEF;save();render();}
   else if(a==='report')openReport();
   else if(a==='reportOne')openReport(selId);
