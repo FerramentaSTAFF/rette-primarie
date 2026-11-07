@@ -199,6 +199,7 @@ dialog form{padding:18px;display:flex;flex-direction:column;gap:12px}
     <label class="f">Nome e cognome<input type="text" id="fNome" required autocomplete="off"></label>
     <div class="row">
       <label class="f">Classe<input type="text" id="fClasse" placeholder="es. 3A" autocomplete="off"></label>
+      <label class="f">Educatore<input type="text" id="fEdu" placeholder="es. Marica" autocomplete="off"></label>
       <label class="f">Quota mensile (€)<input type="number" id="fCosto" min="0" step="0.01" inputmode="decimal" placeholder="automatica"></label>
     </div>
     <div class="f"><span class="eyebrow">Servizi</span><div id="fServizi" class="row"></div>
@@ -206,6 +207,8 @@ dialog form{padding:18px;display:flex;flex-direction:column;gap:12px}
     <label class="f">Paga entro il giorno (vuoto = come tutti)<input type="number" id="fGiorno" min="1" max="31" inputmode="numeric" placeholder="come tutti"></label>
     <label class="f">Dettaglio servizio (giorni, orari)<input type="text" id="fDett" placeholder="es. 3 gg (lun - mer - ven)" autocomplete="off"></label>
     <label class="chk"><input type="checkbox" id="fEsente"> Agevolazione: non paga</label>
+    <label class="chk"><input type="checkbox" id="fDivisa"> Quota divisa: pagano in due separatamente (es. padre e madre)</label>
+    <div class="row" id="fDivRow" hidden><label class="f">Primo<input type="text" id="fDiv1" value="Padre" autocomplete="off"></label><label class="f">Secondo<input type="text" id="fDiv2" value="Madre" autocomplete="off"></label></div>
     <div class="f"><span class="eyebrow">Recapiti</span><span class="small muted">Il primo recapito è quello usato per i promemoria WhatsApp.</span><div id="fRecapiti" class="months"></div>
       <button type="button" class="btn" id="fAddRec" style="align-self:flex-start">+ Aggiungi recapito</button></div>
     <div class="f"><span class="eyebrow">Delegati al ritiro</span><span class="small muted">Persone autorizzate a venire a prendere il bambino.</span><div id="fDelegati" class="months"></div>
@@ -227,6 +230,7 @@ dialog form{padding:18px;display:flex;flex-direction:column;gap:12px}
 <dialog id="dlgMet"><form id="formMet"><div class="row spread"><h2 id="metTitle"></h2><button type="button" class="btn ghost" id="metCancel">Chiudi</button></div>
 <p class="muted" id="metInfo" style="margin:0"></p>
 <div id="metPay" class="row" style="flex-wrap:nowrap"><button type="button" class="btn metbtn" data-metodo="contanti">💶 Pagato in contanti</button><button type="button" class="btn metbtn" data-metodo="bonifico">🏦 Pagato con bonifico</button></div>
+<div id="metParti" class="months" hidden></div>
 <div id="metPaid" class="row"><button type="button" class="btn danger" id="metUnpay">Segna come non pagato</button></div>
 <div class="f" style="border-top:1px solid var(--line);padding-top:12px"><span class="eyebrow">Modifica questo mese</span></div>
 <div class="row" style="flex-wrap:nowrap;align-items:flex-end"><label class="f">Importo del mese (€)<input type="number" id="mImp" min="0" step="0.01" inputmode="decimal"></label><button type="button" class="btn" id="mZero">Non partecipa</button></div>
@@ -242,7 +246,7 @@ dialog form{padding:18px;display:flex;flex-direction:column;gap:12px}
 <div class="row spread"><button type="button" class="btn danger" id="cDelete">Elimina</button><div class="row"><button type="button" class="btn" id="cCancel">Annulla</button><button type="submit" class="btn primary">Salva</button></div></div>
 </form></dialog>
 <dialog id="dlgClasse"><form id="formClasse"><h2 id="clTitle">Crea classe</h2>
-<label class="f">Nome della classe<input type="text" id="clNome" required autocomplete="off" placeholder="es. 3A"></label>
+<label class="f"><span id="clLab">Nome della classe</span><input type="text" id="clNome" required autocomplete="off" placeholder="es. 3A"></label>
 <input type="search" id="clCerca" placeholder="Cerca bambino" autocomplete="off" aria-label="Cerca bambino">
 <div class="row spread"><span class="small muted" id="clConta"></span><button type="button" class="btn ghost" id="clSoloSenza">Mostra solo senza classe</button></div>
 <div id="clLista" class="months" style="max-height:45dvh;overflow:auto;border:1px solid var(--line);border-radius:10px;padding:4px 10px"></div>
@@ -268,7 +272,7 @@ const framed=(()=>{try{return window.self!==window.top}catch(e){return true}})()
 const $=s=>document.querySelector(s);
 
 let selWa=new Set();
-let S, tab='home', selId=null, showDates=false, editAmounts=false, filtro='', filtroClasse='';
+let S, tab='home', selId=null, showDates=false, editAmounts=false, filtro='', filtroClasse='', filtroEdu='';
 
 /* ---------- dati ---------- */
 function annoCorrente(){const n=new Date();return n.getMonth()>=8?n.getFullYear():n.getFullYear()-1;}
@@ -291,6 +295,21 @@ function esempio(){
   s.consegne=[{id:uid(),data:y+'-10-01',importo:100,a:'Coordinatrice Paola (esempio)',note:''}];
   s.note=[{id:uid(),testo:'Esempio di nota: ricordare ai genitori la riunione di venerdì.',data:isoOggi()}];
   return s;
+}
+function migraDivise(){
+  if(S.migrDiv)return;S.migrDiv=true;
+  const P=' (padre)',M=' (madre)';
+  for(const a of [...S.bambini]){if(!a.nome.toLowerCase().endsWith(P))continue;const base=a.nome.slice(0,-P.length);
+    const m=S.bambini.find(x=>x.nome.toLowerCase()===(base+M).toLowerCase());if(!m)continue;
+    const keys=new Set([...Object.keys(a.pagamenti||{}),...Object.keys(m.pagamenti||{})]);
+    a.parziali=a.parziali||{};
+    for(const k of keys){const q={};if(a.pagamenti[k])q[0]={...a.pagamenti[k],importo:a.pagamenti[k].importo??(+a.costo||0)};if(m.pagamenti[k])q[1]={...m.pagamenti[k],importo:m.pagamenti[k].importo??(+m.costo||0)};a.parziali[k]=q;
+      if(q[0]&&q[1])a.pagamenti[k]={data:q[0].data>q[1].data?q[0].data:q[1].data,metodo:'diviso',importo:(+q[0].importo||0)+(+q[1].importo||0)};else delete a.pagamenti[k];}
+    a.nome=base;a.divisa=['Padre','Madre'];if(a.costo!=null&&m.costo!=null)a.costo=(+a.costo)+(+m.costo);
+    a.note=[a.note,m.note].filter(Boolean).filter(t=>!/paga met/i.test(t)).join(' · ');
+    a.recapiti=[...recapiti(a),...recapiti(m)];a.delegati=[...(a.delegati||[]),...(m.delegati||[])];
+    S.bambini=S.bambini.filter(x=>x!==m);}
+  save();
 }
 function migraFratelli(){
   if(S.migrFam)return;S.migrFam=true;
@@ -338,9 +357,20 @@ function scaduti(){
   const out=[];
   for(const g of raggruppa(ordinati())){
     const mm=mesi().filter(mo=>g.membri.some(x=>stato(x,mo)==='scaduto'));
-    if(mm.length)out.push({...g,mm,tot:mm.reduce((t,mo)=>t+g.membri.reduce((s,x)=>s+(stato(x,mo)==='scaduto'?dovuto(x,mo):0),0),0)});
+    if(mm.length)out.push({...g,mm,tot:mm.reduce((t,mo)=>t+g.membri.reduce((s,x)=>s+(stato(x,mo)==='scaduto'?residuo(x,mo):0),0),0)});
   }return out;}
 
+function parti(b){return Array.isArray(b.divisa)&&b.divisa.length>1?b.divisa:null;}
+function parz(b,k){return(b.parziali&&b.parziali[k])||{};}
+function quotaParte(b,mo){const n=parti(b);return n?Math.round(dovuto(b,mo)/n.length*100)/100:dovuto(b,mo);}
+function pagatoParz(b,mo){const n=parti(b);if(!n)return 0;const q=parz(b,mo.key);return n.reduce((t,_,i)=>t+(q[i]?+(q[i].importo??quotaParte(b,mo)):0),0);}
+function residuo(b,mo){return b.pagamenti[mo.key]?0:Math.max(0,dovuto(b,mo)-pagatoParz(b,mo));}
+function setParte(b,mo,i,metodo){
+  b.parziali=b.parziali||{};const q=b.parziali[mo.key]=b.parziali[mo.key]||{};
+  if(metodo)q[i]={data:isoOggi(),metodo,importo:quotaParte(b,mo)};else delete q[i];
+  const n=parti(b);if(n.every((_,j)=>q[j]))b.pagamenti[mo.key]={data:isoOggi(),metodo:'diviso',importo:dovuto(b,mo)};else delete b.pagamenti[mo.key];
+  save();render();toast((metodo?'Pagato in '+metodo+': ':'Tolto il pagato: ')+n[i]+', '+mo.nome);
+}
 function setPagato(b,mo,val,metodo){
   const membri=famiglia(b);
   const prima=membri.map(x=>[x,x.pagamenti[mo.key]?{...x.pagamenti[mo.key]}:null]);
@@ -352,7 +382,9 @@ function chiediMetodo(b,mo){
   const p=b.pagamenti[mo.key],e=hasEcc(b,mo);
   $('#metTitle').textContent=b.nome+' · '+mo.nome;
   $('#metInfo').innerHTML=(p?'<strong style="color:var(--ok)">Pagato il '+dataIt(p.data)+(p.metodo?' in '+p.metodo:'')+'</strong> · ':'')+'Importo: <strong>'+eur(dovuto(b,mo))+'</strong>'+(e?' (quota normale '+eur(quotaBase(b))+')':'')+(b.esente?' · agevolazione':'')+(famiglia(b).length>1?'<br><span class="small">Pagano insieme: '+esc(nomiGruppo(famiglia(b)))+' · totale del mese <strong>'+eur(famDov(famiglia(b),mo))+'</strong>. Pagato e non pagato valgono per tutti.</span>':'');
-  $('#metPay').hidden=!!p;$('#metPaid').hidden=!p;
+  const n=parti(b);
+  $('#metPay').hidden=!!p||!!n;$('#metPaid').hidden=!p||!!n;$('#metParti').hidden=!n;
+  if(n){const q=parz(b,mo.key);$('#metParti').innerHTML='<span class="small muted">Quota divisa: ognuno paga '+eur(quotaParte(b,mo))+'</span>'+n.map((nm,i)=>'<div class="contact"><div class="who"><strong>'+esc(nm)+'</strong><span class="small '+(q[i]?'':'muted')+'" style="'+(q[i]?'color:var(--ok)':'')+'">'+(q[i]?'Pagato il '+dataIt(q[i].data)+' in '+q[i].metodo:'Da pagare '+eur(quotaParte(b,mo)))+'</span></div><div class="row">'+(q[i]?'<button type="button" class="btn danger" data-parte="'+i+'|">Togli</button>':'<button type="button" class="btn" data-parte="'+i+'|contanti">💶 Contanti</button><button type="button" class="btn" data-parte="'+i+'|bonifico">🏦 Bonifico</button>')+'</div></div>').join('');}
   $('#mImp').value=e?b.eccezioni[mo.key]:'';$('#mImp').placeholder=quotaBase(b)+' (normale)';
   $('#mDesc').value=(b.noteMese&&b.noteMese[mo.key])||'';
   const d=$('#dlgMet');d.dataset.b=b.id;d.dataset.k=mo.key;d.showModal();
@@ -364,7 +396,7 @@ function salvaMese(b,mo){
   const t=$('#mDesc').value.trim();b.noteMese=b.noteMese||{};if(t)b.noteMese[mo.key]=t;else delete b.noteMese[mo.key];
 }
 function importoPag(b,k){const p=b.pagamenti[k];if(p&&p.importo!=null)return +p.importo;const mo=mesi().find(m=>m.key===k);if(mo)return dovuto(b,mo);const[y,m]=k.split('-').map(Number);return b.esente?0:(b.eccezioni&&b.eccezioni[k]!=null?+b.eccezioni[k]:quotaBase(b));}
-function entrate(){const out=[];for(const b of S.bambini)for(const k in b.pagamenti){const p=b.pagamenti[k];if(p.metodo==='contanti')out.push({b,k,imp:importoPag(b,k),data:p.data});}return out.sort((a,b)=>b.data.localeCompare(a.data));}
+function entrate(){const out=[];for(const b of S.bambini){for(const k in b.pagamenti){const p=b.pagamenti[k];if(p.metodo==='contanti')out.push({b,k,imp:importoPag(b,k),data:p.data});}const n=parti(b);if(n)for(const k in (b.parziali||{}))for(const i in b.parziali[k]){const q=b.parziali[k][i];if(q&&q.metodo==='contanti')out.push({b,k,imp:+q.importo||0,data:q.data,chi:n[i]});}}return out.sort((a,b)=>b.data.localeCompare(a.data));}
 function uscite(){return(S.consegne||[]).map(c=>({...c,importo:c.importo!=null?+c.importo:+(c.totale||0)})).sort((a,b)=>b.data.localeCompare(a.data));}
 function saldo(){return entrate().reduce((t,x)=>t+x.imp,0)-uscite().reduce((t,x)=>t+x.importo,0);}
 const MET={contanti:'Contanti',bonifico:'Bonifico'};
@@ -426,12 +458,20 @@ function vCassa(){
   (e.length?'<ul class="list small">'+e.map(x=>{const[y,m]=x.k.split('-').map(Number);return'<li><span>'+dataIt(x.data)+' · <button class="btn ghost" style="padding:0;min-height:0;font-size:inherit" data-open="'+x.b.id+'">'+esc(x.b.nome)+'</button> · '+MESI[m-1].toLowerCase()+'</span><strong>+'+eur(x.imp)+'</strong></li>';}).join('')+'</ul>':'<p class="small muted" style="margin:0">Nessun pagamento in contanti.</p>')+
   '</details></section>';
 }
+const GR={classe:{tit:'Classi',uno:'classe',crea:'+ Crea classe',vuoto:'Nessuna classe ancora. Creane una e seleziona i bambini che ne fanno parte.',ph:'es. 3A',lab:'Nome della classe',up:true,pre:'Classe '},
+  educatore:{tit:'Educatori',uno:'educatore',crea:'+ Crea educatore',vuoto:'Nessun educatore ancora. Crealo e seleziona i bambini che segue il pomeriggio.',ph:'es. Marica',lab:'Nome dell’educatore',up:false,pre:'Educatore: '}};
+function vGruppi(campo){const g=GR[campo];const cl={};S.bambini.forEach(b=>{if(b[campo])cl[b[campo]]=(cl[b[campo]]||0)+1;});const k=Object.keys(cl).sort((a,b)=>a.localeCompare(b,'it',{numeric:true}));const senza=S.bambini.filter(b=>!b[campo]).length;
+  return'<section class="card"><div class="row spread"><h2>'+g.tit+'</h2><button class="btn primary" data-grnew="'+campo+'">'+g.crea+'</button></div>'+
+  (k.length?'<ul class="list">'+k.map(c=>{const key=campo+'|'+c;return'<li style="display:block"><div class="row spread"><span><strong>'+esc(c)+'</strong> <span class="small muted">'+cl[c]+(cl[c]===1?' bambino':' bambini')+'</span></span><div class="row"><button class="btn ghost" data-vedicl="'+esc(key)+'">'+(clAperte.has(key)?'Nascondi alunni':'Visualizza alunni')+'</button><button class="btn" data-gred="'+esc(key)+'">Modifica</button></div></div>'+
+    (clAperte.has(key)?'<ol class="small" style="margin:8px 0 0;padding-left:22px;display:flex;flex-direction:column;gap:4px">'+ordinati().filter(x=>x[campo]===c).map(x=>'<li><button class="btn ghost" style="padding:0;min-height:0;font-size:inherit;color:var(--ink);text-align:left" data-open="'+x.id+'">'+esc(x.nome)+'</button></li>').join('')+'</ol>':'')+'</li>';}).join('')+'</ul>':'<p class="small muted" style="margin:0">'+g.vuoto+'</p>')+
+  (senza&&k.length?'<p class="small muted" style="margin:0">'+senza+' bambini senza '+g.uno+'.</p>':'')+'</section>';}
 function vTutti(){
   const mm=mesi(), mc=meseCorrente();
   const classi=[...new Set(S.bambini.map(b=>b.classe).filter(Boolean))].sort();
-  const lista=ordinati().filter(b=>(!filtro||b.nome.toLowerCase().includes(filtro.toLowerCase()))&&(!filtroClasse||b.classe===filtroClasse));
+  const lista=ordinati().filter(b=>(!filtro||b.nome.toLowerCase().includes(filtro.toLowerCase()))&&(!filtroClasse||b.classe===filtroClasse)&&(!filtroEdu||b.educatore===filtroEdu));
+  const edus=[...new Set(S.bambini.map(b=>b.educatore).filter(Boolean))].sort();
   return head('Tutti i bambini')+
-  '<div class="row" style="flex-wrap:nowrap"><input type="search" id="cerca" placeholder="Cerca nome" value="'+esc(filtro)+'"><select id="classe" style="width:auto"><option value="">Tutte le classi</option>'+classi.map(c=>'<option'+(c===filtroClasse?' selected':'')+'>'+esc(c)+'</option>').join('')+'</select></div>'+
+  '<div class="row" style="flex-wrap:nowrap"><input type="search" id="cerca" placeholder="Cerca nome" value="'+esc(filtro)+'"><select id="classe" style="width:auto"><option value="">Tutte le classi</option>'+classi.map(c=>'<option'+(c===filtroClasse?' selected':'')+'>'+esc(c)+'</option>').join('')+'</select>'+(edus.length?'<select id="edu" style="width:auto"><option value="">Tutti gli educatori</option>'+edus.map(c=>'<option'+(c===filtroEdu?' selected':'')+'>'+esc(c)+'</option>').join('')+'</select>':'')+'</div>'+
   '<div class="legend"><span class="pill pagato">✓ Pagato</span><span class="pill scaduto">! Scaduto</span><span class="pill corrente">Da pagare</span><span class="pill esente">– Non dovuto</span><span class="pill ecc">Importo diverso</span></div>'+
   (lista.length?'<div class="gridwrap"><table class="grid"><thead><tr><th class="name">Bambino</th>'+mm.map(mo=>'<th class="'+(mc&&mo.key===mc.key?'now':'')+'">'+mo.breve+'</th>').join('')+'<th>Resta</th></tr></thead><tbody>'+
   raggruppa(lista).map(g=>{const M=g.membri,b=g.b;
@@ -439,7 +479,7 @@ function vTutti(){
     mm.map(mo=>{const sts=M.map(x=>stato(x,mo)),d=famDov(M,mo),e=M.some(x=>(hasEcc(x,mo)&&!x.esente)||(x.noteMese&&x.noteMese[mo.key]));
       const vivi=sts.filter(x=>x!=='esente');
       const st=!vivi.length?'esente':vivi.every(x=>x==='pagato')?'pagato':['scaduto','corrente','futuro'].find(x=>vivi.includes(x))||'pagato';
-      const sym=st==='pagato'?'✓':st==='scaduto'?'!':st==='esente'?'–':'';
+      const sym=st==='pagato'?'✓':M.some(x=>pagatoParz(x,mo)>0)?'½':st==='scaduto'?'!':st==='esente'?'–':'';
       return'<td><button class="cell '+st+(e?' ecc':'')+'" data-pay="'+b.id+'|'+mo.key+'" aria-label="'+esc(g.nome)+', '+mo.nome+': '+ETI[st]+', '+eur(d)+'">'+sym+(d>0?'<small>'+Math.round(d)+'€</small>':'')+'</button></td>';}).join('')+
     '<td><strong>'+eur(M.reduce((t,x)=>t+totali(x).res,0))+'</strong></td></tr>';}).join('')+'</tbody></table></div>'+
   '<p class="small muted">Tocca un mese per segnarlo pagato (o toglierlo). Il giorno viene salvato e lo vedi nella scheda del bambino.</p>'
@@ -454,7 +494,7 @@ function vBambino(){
   const b=S.bambini.find(x=>x.id===selId), t=totali(b);
   return head('Bambino')+
   '<div class="row" style="flex-wrap:nowrap"><select id="selB" aria-label="Scegli bambino">'+lista.map(x=>'<option value="'+x.id+'"'+(x.id===selId?' selected':'')+'>'+esc(x.nome)+(x.classe?' · '+esc(x.classe):'')+'</option>').join('')+'</select><button class="btn" data-act="add">+ Nuovo</button></div>'+
-  '<section class="card"><div class="row spread" style="align-items:flex-start"><div class="who"><h2>'+esc(b.nome)+'</h2><span class="muted">'+(b.classe?'Classe '+esc(b.classe)+' · ':'')+esc(servNomi(b))+'</span></div><button class="btn" data-act="edit">Modifica</button></div>'+
+  '<section class="card"><div class="row spread" style="align-items:flex-start"><div class="who"><h2>'+esc(b.nome)+'</h2><span class="muted">'+(b.classe?'Classe '+esc(b.classe)+' · ':'')+(b.educatore?'Educatore '+esc(b.educatore)+' · ':'')+esc(servNomi(b))+'</span></div><button class="btn" data-act="edit">Modifica</button></div>'+
   '<div class="row">'+(b.esente?'<span class="pill esente">Agevolazione: non paga</span>':'<span class="pill futuro">Quota '+eur(quotaBase(b))+' al mese</span>')+(b.giorno&&!b.esente?'<span class="pill ecc">paga entro il '+b.giorno+'</span>':'')+(b.costo!==null&&b.costo!==''&&!b.esente?'<span class="pill ecc">quota personalizzata</span>':'')+'</div>'+
   (famiglia(b).length>1?'<p class="small" style="margin:0">Fratelli (pagano insieme): '+famiglia(b).filter(x=>x.id!==b.id).map(x=>'<button class="btn ghost" style="padding:0;min-height:0" data-open="'+x.id+'">'+esc(x.nome)+'</button>').join(', ')+' · totale famiglia '+eur(famiglia(b).reduce((t,x)=>t+(x.esente?0:quotaBase(x)),0))+' al mese</p>':'')+
   (b.allergie?'<p class="allergy"><strong>Allergie e intolleranze:</strong> '+esc(b.allergie)+'</p>':'')+
@@ -472,7 +512,7 @@ function vBambino(){
   (editAmounts?'<p class="small muted" style="margin:0">Scrivi un importo solo nei mesi diversi dal solito (es. 0 se in quel mese non paga). Lascia vuoto per la quota normale.</p>':'')+
   '<div class="months">'+mesi().map(mo=>{const st=stato(b,mo),d=dovuto(b,mo),p=b.pagamenti[mo.key],e=hasEcc(b,mo);
     return'<div class="mrow"><div class="mname"><strong>'+mo.nome+' '+mo.y+'</strong><span><span class="pill '+st+'">'+ETI[st]+'</span>'+(e&&!b.esente?' <span class="pill ecc">eccezione</span>':'')+(p&&p.metodo?' <span class="pill met">'+MET[p.metodo]+'</span>':'')+'</span>'+
-      (b.noteMese&&b.noteMese[mo.key]?'<span class="small muted">'+esc(b.noteMese[mo.key])+'</span>':'')+(showDates&&p?'<label class="small muted">Pagato il <input type="date" data-date="'+mo.key+'" value="'+p.data+'"></label><select data-met="'+mo.key+'" style="width:150px;min-height:34px;padding:4px 8px;font-size:.85rem" aria-label="Metodo"><option value="">Metodo?</option><option value="contanti"'+(p.metodo==='contanti'?' selected':'')+'>Contanti</option><option value="bonifico"'+(p.metodo==='bonifico'?' selected':'')+'>Bonifico</option></select>':'')+'</div>'+
+      (b.noteMese&&b.noteMese[mo.key]?'<span class="small muted">'+esc(b.noteMese[mo.key])+'</span>':'')+(parti(b)?'<span class="small muted">'+parti(b).map((nm,i)=>esc(nm)+(parz(b,mo.key)[i]?' ✓':' –')).join(' · ')+'</span>':'')+(showDates&&p?'<label class="small muted">Pagato il <input type="date" data-date="'+mo.key+'" value="'+p.data+'"></label><select data-met="'+mo.key+'" style="width:150px;min-height:34px;padding:4px 8px;font-size:.85rem" aria-label="Metodo"><option value="">Metodo?</option><option value="contanti"'+(p.metodo==='contanti'?' selected':'')+'>Contanti</option><option value="bonifico"'+(p.metodo==='bonifico'?' selected':'')+'>Bonifico</option></select>':'')+'</div>'+
       '<div class="amt">'+(editAmounts&&!b.esente?'<input type="number" min="0" step="0.01" inputmode="decimal" data-ecc="'+mo.key+'" value="'+(e?b.eccezioni[mo.key]:'')+'" placeholder="'+quotaBase(b)+'" aria-label="Importo '+mo.nome+'">':'<button class="btn ghost" style="padding:4px 6px;min-height:0;color:var(--ink)" data-pay="'+b.id+'|'+mo.key+'"><strong>'+eur(d)+'</strong> ✎</button>')+'</div>'+
       '<label class="paybox"><input type="checkbox" data-chk="'+mo.key+'"'+(p?' checked':'')+(d<=0&&!p?' disabled':'')+'>pagato</label></div>';}).join('')+'</div></section>'+
   '<div class="row"><button class="btn primary" data-act="reportOne">Riepilogo di '+esc(b.nome.split(' ')[0])+' · PDF / stampa</button></div>';
@@ -485,10 +525,7 @@ function vAltro(){
   '<label class="f">Si paga entro il giorno<input type="number" id="sGiorno" min="1" max="31" value="'+S.giornoScadenza+'"></label></div>'+
   '<div class="f"><span class="eyebrow">Mesi in cui si paga</span><div class="row">'+ORDINE.map(m=>'<label class="chk small"><input type="checkbox" data-mese="'+m+'"'+(S.mesiAttivi.includes(m)?' checked':'')+'> '+MESI[m-1].slice(0,3)+'</label>').join('')+'</div></div>'+
   '<p class="small muted" style="margin:0">Quando inizia il nuovo anno basta cambiare l’anno qui: i bambini restano, i mesi ripartono da zero e quelli vecchi restano salvati.</p></section>'+
-  '<section class="card"><div class="row spread"><h2>Classi</h2><button class="btn primary" data-act="classe">+ Crea classe</button></div>'+
-  (()=>{const cl={};S.bambini.forEach(b=>{if(b.classe)cl[b.classe]=(cl[b.classe]||0)+1;});const k=Object.keys(cl).sort((a,b)=>a.localeCompare(b,'it',{numeric:true}));const senza=S.bambini.filter(b=>!b.classe).length;
-    return(k.length?'<ul class="list">'+k.map(c=>'<li style="display:block"><div class="row spread"><span><strong>'+esc(c)+'</strong> <span class="small muted">'+cl[c]+(cl[c]===1?' bambino':' bambini')+'</span></span><div class="row"><button class="btn ghost" data-vedicl="'+esc(c)+'">'+(clAperte.has(c)?'Nascondi alunni':'Visualizza alunni')+'</button><button class="btn" data-classe="'+esc(c)+'">Modifica</button></div></div>'+
-      (clAperte.has(c)?'<ol class="small" style="margin:8px 0 0;padding-left:22px;display:flex;flex-direction:column;gap:4px">'+ordinati().filter(x=>x.classe===c).map(x=>'<li><button class="btn ghost" style="padding:0;min-height:0;font-size:inherit;color:var(--ink);text-align:left" data-open="'+x.id+'">'+esc(x.nome)+'</button></li>').join('')+'</ol>':'')+'</li>').join('')+'</ul>':'<p class="small muted" style="margin:0">Nessuna classe ancora. Creane una e seleziona i bambini che ne fanno parte.</p>')+(senza&&k.length?'<p class="small muted" style="margin:0">'+senza+' bambini senza classe.</p>':'');})()+'</section>'+
+  vGruppi('classe')+vGruppi('educatore')+
   '<section class="card"><h2>Servizi e prezzi</h2><p class="small muted" style="margin:0">La quota di ogni bambino è la somma dei suoi servizi, a meno che tu non scriva una quota personalizzata nella sua scheda.</p>'+
   '<ul class="list">'+S.servizi.map(s=>'<li><input type="text" data-snome="'+s.id+'" value="'+esc(s.nome)+'" style="flex:2;width:auto" aria-label="Nome servizio"><input type="number" data-scosto="'+s.id+'" value="'+s.costo+'" min="0" step="0.01" inputmode="decimal" style="flex:1;width:auto;max-width:110px" aria-label="Prezzo mensile"><button class="btn ghost" data-delserv="'+s.id+'">Elimina</button></li>').join('')+'</ul>'+
   '<form id="formServ" class="row" style="flex-wrap:nowrap"><input type="text" id="nsNome" placeholder="Nuovo servizio" autocomplete="off" style="flex:2"><input type="number" id="nsCosto" placeholder="€/mese" min="0" step="0.01" inputmode="decimal" style="flex:1;max-width:110px"><button class="btn primary" type="submit">Aggiungi</button></form></section>'+
@@ -507,6 +544,7 @@ function tabellaAnno(lista,oneId){
   return'<div class="tw"><table><thead><tr><th class="l">Bambino</th><th>Classe</th><th class="l">Servizi</th><th>Quota</th>'+mm.map(mo=>'<th>'+mo.breve+'</th>').join('')+'<th>Dovuto</th><th>Pagato</th><th>Resta</th></tr></thead><tbody>'+
   lista.map(b=>{const t=totali(b);return'<tr><td class="l"><strong>'+esc(b.nome)+'</strong>'+(b.allergie?'<br><span style="color:#a52a17">Allergie: '+esc(b.allergie)+'</span>':'')+(b.note?'<br><span style="color:#666">'+esc(b.note)+'</span>':'')+(oneId&&recapiti(b).length?'<br><span style="color:#444">'+recapiti(b).map(r=>esc(r.nome)+' '+esc(r.tel)).join(' · ')+'</span>':'')+(oneId&&(b.delegati||[]).length?'<br><span style="color:#444">Delegati: '+b.delegati.map(r=>esc(r.nome)+' '+esc(r.tel)).join(' · ')+'</span>':'')+'</td><td>'+esc(b.classe||'')+'</td><td class="l">'+esc(servNomi(b))+'</td><td>'+(b.esente?'Agevolaz.':eur(quotaBase(b)))+'</td>'+
     mm.map(mo=>{const st=stato(b,mo),d=dovuto(b,mo),p=b.pagamenti[mo.key],e=hasEcc(b,mo)&&!b.esente;
+      if(st!=='pagato'&&pagatoParz(b,mo)>0)return'<td class="'+(st==='scaduto'?'s':'')+'">½ manca '+eur(residuo(b,mo))+'</td>';
       if(st==='pagato')return'<td class="p">✓ '+dataIt(p.data).slice(0,5)+(p.metodo?' '+(p.metodo==='contanti'?'C':'B'):'')+(e?'<br>'+eur(d)+'*':'')+'</td>';
       if(st==='esente')return'<td class="n">'+(b.noteMese&&b.noteMese[mo.key]?esc(b.noteMese[mo.key]):'–')+'</td>';
       if(b.noteMese&&b.noteMese[mo.key]&&st!=='pagato')return'<td class="n" title="">'+(d>0?eur(d)+'<br>':'')+esc(b.noteMese[mo.key])+'</td>';
@@ -563,18 +601,19 @@ $('#fServizi').addEventListener('change',updAuto);
 function openChild(id){
   editId=id;const b=id?S.bambini.find(x=>x.id===id):null;
   $('#dlgTitle').textContent=b?'Modifica bambino':'Nuovo bambino';
-  $('#fNome').value=b?b.nome:'';$('#fClasse').value=b?b.classe:'';$('#fCosto').value=b&&b.costo!==null?b.costo:'';
-  $('#fEsente').checked=b?b.esente:false;$('#fAllergie').value=b?b.allergie||'':'';$('#fDett').value=b?b.dettaglio||'':'';$('#fGiorno').value=b&&b.giorno?b.giorno:'';$('#fGiorno').placeholder='come tutti: '+S.giornoScadenza;fillRec(b?recapiti(b):[]);fratTmp=b?famiglia(b).filter(x=>x.id!==b.id).map(x=>x.id):[];drawFrat();fillRec(b&&b.delegati?b.delegati:[],'#fDelegati',false);$('#fNote').value=b?b.note:'';
+  $('#fNome').value=b?b.nome:'';$('#fClasse').value=b?b.classe:'';$('#fEdu').value=b?b.educatore||'':'';$('#fCosto').value=b&&b.costo!==null?b.costo:'';
+  $('#fEsente').checked=b?b.esente:false;{const n=b&&parti(b);$('#fDivisa').checked=!!n;$('#fDivRow').hidden=!n;$('#fDiv1').value=n?n[0]:'Padre';$('#fDiv2').value=n?n[1]:'Madre';}$('#fAllergie').value=b?b.allergie||'':'';$('#fDett').value=b?b.dettaglio||'':'';$('#fGiorno').value=b&&b.giorno?b.giorno:'';$('#fGiorno').placeholder='come tutti: '+S.giornoScadenza;fillRec(b?recapiti(b):[]);fratTmp=b?famiglia(b).filter(x=>x.id!==b.id).map(x=>x.id):[];drawFrat();fillRec(b&&b.delegati?b.delegati:[],'#fDelegati',false);$('#fNote').value=b?b.note:'';
   fillServ(b?b.servizi:S.servizi.slice(0,1).map(s=>s.id));
   const del=$('#fDelete');del.hidden=!b;del.textContent='Elimina';del.dataset.armed='';
   dlg.showModal();
 }
+$('#fDivisa').addEventListener('change',e=>{$('#fDivRow').hidden=!e.target.checked;});
 $('#fCancel').onclick=()=>dlg.close();
 $('#fDelete').onclick=e=>{const d=e.currentTarget;if(!d.dataset.armed){d.dataset.armed='1';d.textContent='Tocca ancora per eliminare';return;}
   S.bambini=S.bambini.filter(b=>b.id!==editId);selId=null;save();dlg.close();render();toast('Bambino eliminato');};
 $('#formChild').addEventListener('submit',e=>{e.preventDefault();
   const v=$('#fCosto').value.trim().replace(',','.');
-  const data={nome:$('#fNome').value.trim(),classe:$('#fClasse').value.trim().toUpperCase(),servizi:selServ(),costo:v===''?null:+v,esente:$('#fEsente').checked,allergie:$('#fAllergie').value.trim(),dettaglio:$('#fDett').value.trim(),giorno:(+$('#fGiorno').value>=1&&+$('#fGiorno').value<=31)?+$('#fGiorno').value:null,recapiti:leggiRec(),delegati:leggiRec('#fDelegati'),note:$('#fNote').value.trim()};
+  const data={nome:$('#fNome').value.trim(),classe:$('#fClasse').value.trim().toUpperCase(),educatore:$('#fEdu').value.trim(),servizi:selServ(),costo:v===''?null:+v,esente:$('#fEsente').checked,divisa:$('#fDivisa').checked?[$('#fDiv1').value.trim()||'Primo',$('#fDiv2').value.trim()||'Secondo']:null,allergie:$('#fAllergie').value.trim(),dettaglio:$('#fDett').value.trim(),giorno:(+$('#fGiorno').value>=1&&+$('#fGiorno').value<=31)?+$('#fGiorno').value:null,recapiti:leggiRec(),delegati:leggiRec('#fDelegati'),note:$('#fNote').value.trim()};
   if(!data.nome)return;
   if(editId){const ob=S.bambini.find(b=>b.id===editId);delete ob.genitore;delete ob.telefono;Object.assign(ob,data);salvaFrat(ob);}
   else{const b=Object.assign({id:uid(),eccezioni:{},pagamenti:{}},data);S.bambini.push(b);selId=b.id;salvaFrat(b);}
@@ -583,6 +622,7 @@ $('#formChild').addEventListener('submit',e=>{e.preventDefault();
 /* ---------- metodo ---------- */
 function metCtx(){const d=$('#dlgMet');return[S.bambini.find(y=>y.id===d.dataset.b),mesi().find(m=>m.key===d.dataset.k)];}
 document.querySelectorAll('.metbtn').forEach(x=>x.onclick=()=>{const[b,mo]=metCtx();if(!b||!mo)return;salvaMese(b,mo);if(dovuto(b,mo)<=0){save();$('#dlgMet').close();render();toast('Importo 0: non c’è niente da pagare');return;}$('#dlgMet').close();setPagato(b,mo,true,x.dataset.metodo);});
+$('#metParti').addEventListener('click',e=>{const t=e.target.closest('[data-parte]');if(!t)return;const[i,m]=t.dataset.parte.split('|');const[b,mo]=metCtx();if(!b||!mo)return;salvaMese(b,mo);setParte(b,mo,+i,m||null);chiediMetodo(b,mo);});
 $('#metUnpay').onclick=()=>{const[b,mo]=metCtx();$('#dlgMet').close();if(b&&mo)setPagato(b,mo,false);};
 $('#mZero').onclick=()=>{$('#mImp').value='0';if(!$('#mDesc').value)$('#mDesc').value='Non partecipa';};
 $('#mReset').onclick=()=>{$('#mImp').value='';};
@@ -616,28 +656,29 @@ $('#formCons').addEventListener('submit',e=>{e.preventDefault();
 
 /* ---------- classi ---------- */
 let clAperte=new Set();
-let clOrig=null,clSel=new Set(),clSoloSenza=false;
+let clOrig=null,clSel=new Set(),clSoloSenza=false,clCampo='classe';
 function drawClasse(){
-  const q=$('#clCerca').value.trim().toLowerCase();
-  $('#clLista').innerHTML=ordinati().filter(b=>(!q||b.nome.toLowerCase().includes(q))&&(!clSoloSenza||!b.classe||clSel.has(b.id))).map(b=>'<label class="chk" style="padding:8px 0;border-top:1px solid var(--line)"><input type="checkbox" data-clb="'+b.id+'"'+(clSel.has(b.id)?' checked':'')+'><span style="flex:1">'+esc(b.nome)+'</span>'+(b.classe&&b.classe!==clOrig?'<span class="pill futuro">'+esc(b.classe)+'</span>':'')+'</label>').join('')||'<p class="small muted">Nessun bambino.</p>';
+  const q=$('#clCerca').value.trim().toLowerCase(),c=clCampo;
+  $('#clLista').innerHTML=ordinati().filter(b=>(!q||b.nome.toLowerCase().includes(q))&&(!clSoloSenza||!b[c]||clSel.has(b.id))).map(b=>'<label class="chk" style="padding:8px 0;border-top:1px solid var(--line)"><input type="checkbox" data-clb="'+b.id+'"'+(clSel.has(b.id)?' checked':'')+'><span style="flex:1">'+esc(b.nome)+'</span>'+(b[c]&&b[c]!==clOrig?'<span class="pill futuro">'+esc(b[c])+'</span>':'')+'</label>').join('')||'<p class="small muted">Nessun bambino'+(clSoloSenza?' senza '+GR[c].uno+'. Tocca “Mostra tutti”.':'.')+'</p>';
   $('#clConta').textContent=clSel.size+' selezionati';
-  $('#clSoloSenza').textContent=clSoloSenza?'Mostra tutti':'Mostra solo senza classe';
+  $('#clSoloSenza').textContent=clSoloSenza?'Mostra tutti':'Mostra solo senza '+GR[c].uno;
 }
-function openClasse(nome){
-  clOrig=nome||null;clSel=new Set(nome?S.bambini.filter(b=>b.classe===nome).map(b=>b.id):[]);clSoloSenza=!nome;
-  $('#clTitle').textContent=nome?'Classe '+nome:'Crea classe';$('#clNome').value=nome||'';$('#clCerca').value='';
-  const d=$('#clDelete');d.hidden=!nome;d.textContent='Elimina classe';d.dataset.armed='';
+function openClasse(nome,campo){
+  clCampo=campo||'classe';const g=GR[clCampo];
+  clOrig=nome||null;clSel=new Set(nome?S.bambini.filter(b=>b[clCampo]===nome).map(b=>b.id):[]);clSoloSenza=!nome;
+  $('#clTitle').textContent=nome?g.pre+nome:g.crea.replace('+ ','');$('#clLab').textContent=g.lab;$('#clNome').placeholder=g.ph;$('#clNome').value=nome||'';$('#clCerca').value='';
+  const d=$('#clDelete');d.hidden=!nome;d.textContent='Elimina '+g.uno;d.dataset.armed='';
   drawClasse();$('#dlgClasse').showModal();
 }
 $('#clLista').addEventListener('change',e=>{const id=e.target.dataset.clb;if(!id)return;e.target.checked?clSel.add(id):clSel.delete(id);$('#clConta').textContent=clSel.size+' selezionati';});
 $('#clCerca').addEventListener('input',drawClasse);
 $('#clSoloSenza').onclick=()=>{clSoloSenza=!clSoloSenza;drawClasse();};
 $('#clCancel').onclick=()=>$('#dlgClasse').close();
-$('#clDelete').onclick=e=>{const d=e.currentTarget;if(!d.dataset.armed){d.dataset.armed='1';d.textContent='Tocca ancora: i bambini restano, senza classe';return;}
-  S.bambini.forEach(b=>{if(b.classe===clOrig)b.classe='';});save();$('#dlgClasse').close();render();toast('Classe eliminata');};
-$('#formClasse').addEventListener('submit',e=>{e.preventDefault();const n=$('#clNome').value.trim().toUpperCase();if(!n)return;
-  S.bambini.forEach(b=>{if(clSel.has(b.id))b.classe=n;else if(b.classe===clOrig||b.classe===n)b.classe='';});
-  save();$('#dlgClasse').close();render();toast('Classe '+n+': '+clSel.size+' bambini');});
+$('#clDelete').onclick=e=>{const d=e.currentTarget,c=clCampo;if(!d.dataset.armed){d.dataset.armed='1';d.textContent='Tocca ancora: i bambini restano';return;}
+  S.bambini.forEach(b=>{if(b[c]===clOrig)b[c]='';});save();$('#dlgClasse').close();render();toast('Eliminato');};
+$('#formClasse').addEventListener('submit',e=>{e.preventDefault();const c=clCampo;let n=$('#clNome').value.trim();if(GR[c].up)n=n.toUpperCase();if(!n)return;
+  S.bambini.forEach(b=>{if(clSel.has(b.id))b[c]=n;else if(b[c]===clOrig||b[c]===n)b[c]='';});
+  save();$('#dlgClasse').close();render();toast(GR[c].pre+n+' · '+clSel.size+' bambini');});
 
 /* ---------- WhatsApp ---------- */
 function telWa(t){let d=String(t||'').replace(/[^\d+]/g,'');if(d.startsWith('+'))d=d.slice(1);else if(d.startsWith('00'))d=d.slice(2);else if(/^3\d{8,9}$/.test(d)||/^0\d{5,10}$/.test(d))d='39'+d;return d.replace(/\D/g,'');}
@@ -676,7 +717,7 @@ function backup(){
 }
 function importa(file){
   const fr=new FileReader();
-  fr.onload=()=>{try{const d=JSON.parse(fr.result);if(!Array.isArray(d.bambini))throw 0;S=Object.assign(base(),d);migraFratelli();save();render();toast('Backup ripristinato: '+S.bambini.length+' bambini');}catch(e){toast('Questo file non è un backup dell’app. Scegli il file backup-pagamenti-….json');}};
+  fr.onload=()=>{try{const d=JSON.parse(fr.result);if(!Array.isArray(d.bambini))throw 0;S=Object.assign(base(),d);migraFratelli();migraDivise();save();render();toast('Backup ripristinato: '+S.bambini.length+' bambini');}catch(e){toast('Questo file non è un backup dell’app. Scegli il file backup-pagamenti-….json');}};
   fr.readAsText(file);
 }
 
@@ -684,8 +725,9 @@ function importa(file){
 document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{tab=t.dataset.tab;render();scrollTo(0,0);});
 const app=$('#app');
 app.addEventListener('click',e=>{
-  const t=e.target.closest('[data-pay],[data-open],[data-act],[data-delnote],[data-delserv],[data-editcons],[data-classe],[data-vedicl]');if(!t)return;
-  if(t.dataset.classe){openClasse(t.dataset.classe);return;}
+  const t=e.target.closest('[data-pay],[data-open],[data-act],[data-delnote],[data-delserv],[data-editcons],[data-gred],[data-grnew],[data-vedicl]');if(!t)return;
+  if(t.dataset.gred){const k=t.dataset.gred,x=k.indexOf('|');openClasse(k.slice(x+1),k.slice(0,x));return;}
+  if(t.dataset.grnew){openClasse(null,t.dataset.grnew);return;}
   if(t.dataset.vedicl){const c=t.dataset.vedicl;clAperte.has(c)?clAperte.delete(c):clAperte.add(c);render();return;}
   if(t.dataset.editcons){openCons(t.dataset.editcons);return;}
   if(t.dataset.pay){const[id,k]=t.dataset.pay.split('|');const b=S.bambini.find(x=>x.id===id),mo=mesi().find(m=>m.key===k);if(b&&mo)togglePay(b,mo);return;}
@@ -698,7 +740,6 @@ app.addEventListener('click',e=>{
   else if(a==='edit')openChild(selId);
   else if(a==='wa')openWa();
   else if(a==='consegna')openCons(null);
-  else if(a==='classe')openClasse(null);
   else if(a==='msgReset'){S.messaggioWa=MSG_DEF;save();render();}
   else if(a==='report')openReport();
   else if(a==='reportOne')openReport(selId);
@@ -717,6 +758,7 @@ app.addEventListener('input',e=>{const t=e.target;
 });
 app.addEventListener('change',e=>{const t=e.target;const b=S.bambini.find(x=>x.id===selId);
   if(t.id==='classe'){filtroClasse=t.value;render();}
+  else if(t.id==='edu'){filtroEdu=t.value;render();}
   else if(t.dataset.wasel){t.checked?selWa.add(t.dataset.wasel):selWa.delete(t.dataset.wasel);render();}
   else if(t.id==='waAll'){scaduti().forEach(x=>t.checked?selWa.add(x.b.id):selWa.delete(x.b.id));render();}
   else if(t.id==='sMsg'){S.messaggioWa=t.value.trim()||MSG_DEF;save();}
@@ -735,7 +777,7 @@ app.addEventListener('change',e=>{const t=e.target;const b=S.bambini.find(x=>x.i
   else if(t.id==='imp'&&t.files[0])importa(t.files[0]);
 });
 
-load();migraFratelli();
+load();migraFratelli();migraDivise();
 try{const tb=localStorage.getItem(KEY+'-tab');if(tb)tab=tb;}catch(e){}
 render();
 if('serviceWorker' in navigator&&!framed&&location.protocol==='https:'){navigator.serviceWorker.register('sw.js').catch(()=>{});}
