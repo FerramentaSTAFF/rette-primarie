@@ -1,0 +1,565 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#7a4fd8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Pagamenti">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}[hidden]{display:none!important}img{max-width:100%}</style>
+<title>Pagamenti Bambini</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+/* Layout: app da telefono con barra schede in basso; contenuto a colonna unica, griglia mesi scorrevole in orizzontale */
+:root{
+  --bg:#fff6ea; --surface:#ffffff; --ink:#2a2140; --muted:#6d6380; --line:#f0e3d2;
+  --accent:#7a4fd8; --accent-soft:#efe7ff; --sun:#ffc23d; --sun-soft:#fff1c9; --sky:#18b3c4; --sky-soft:#dcf6f8; --pink:#ff6f91;
+  --ok:#1e9a56; --ok-soft:#dbf6e5; --late:#e5484d; --late-soft:#ffe4e4; --due:#b86e00; --due-soft:#fff0c4; --none:#b3a9c2;
+  --f-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body:"Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --r:12px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#1c1729; --surface:#262037; --ink:#f3eefc; --muted:#b2a8c8; --line:#3a3150;
+  --accent:#b597ff; --accent-soft:#382b5e; --sun:#ffd166; --sun-soft:#43391b; --sky:#5ad8e6; --sky-soft:#173c42; --pink:#ff8fab;
+  --ok:#5fdc94; --ok-soft:#173b29; --late:#ff7b7f; --late-soft:#4a2228; --due:#ffcb5c; --due-soft:#42341a; --none:#6c6385; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#1c1729; --surface:#262037; --ink:#f3eefc; --muted:#b2a8c8; --line:#3a3150;
+  --accent:#b597ff; --accent-soft:#382b5e; --sun:#ffd166; --sun-soft:#43391b; --sky:#5ad8e6; --sky-soft:#173c42; --pink:#ff8fab;
+  --ok:#5fdc94; --ok-soft:#173b29; --late:#ff7b7f; --late-soft:#4a2228; --due:#ffcb5c; --due-soft:#42341a; --none:#6c6385; color-scheme:dark}
+*{box-sizing:border-box}
+html,body{background:var(--bg);color:var(--ink)}
+body{margin:0;font-family:var(--f-body);font-size:16px;line-height:1.45;font-variant-numeric:tabular-nums}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+button,input,select,textarea{font:inherit;color:inherit}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.15}
+.wrap{max-width:860px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:16px calc(96px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:16px}
+header.top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;background:linear-gradient(120deg,var(--accent),var(--pink) 60%,var(--sun));color:#fff;border-radius:18px;padding:18px 18px 16px;position:relative;overflow:hidden}
+header.top::after{content:"";position:absolute;right:-30px;top:-30px;width:110px;height:110px;border-radius:50%;background:rgba(255,255,255,.18)}
+header.top h1{font-size:1.7rem;color:#fff}
+.anno{color:#fff;font-size:.85rem;font-weight:700;background:rgba(255,255,255,.22);padding:3px 10px;border-radius:999px;position:relative;z-index:1}
+.eyebrow{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:0 2px 0 var(--line);padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.spread{justify-content:space-between}
+.muted{color:var(--muted)}
+.small{font-size:.85rem}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 14px;cursor:pointer;font-weight:700;font-size:.9rem;min-height:40px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.btn.danger{color:var(--late);border-color:var(--late)}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--accent)}
+.btn:focus-visible,.cell:focus-visible,.tab:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+input[type=text],input[type=tel],input[type=number],input[type=date],input[type=search],select,textarea{border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:9px 11px;min-height:42px;width:100%;min-width:0}
+textarea{min-height:70px;resize:vertical}
+.f{display:flex;flex-direction:column;gap:4px;font-size:.85rem;color:var(--muted);font-weight:700;min-width:0;flex:1}
+label.chk{display:flex;gap:8px;align-items:center;cursor:pointer}
+input[type=checkbox]{width:22px;height:22px;accent-color:var(--accent)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.stat b{font-family:var(--f-display);font-size:1.35rem;line-height:1.1}
+.stat{border:0}
+.stats .stat:nth-child(1){background:var(--late-soft)} .stats .stat:nth-child(2){background:var(--ok-soft)} .stats .stat:nth-child(3){background:var(--sky-soft)}
+.stat.late b{color:var(--late)} .stat.ok b{color:var(--ok)}
+@media (max-width:420px){.stats{grid-template-columns:1fr 1fr}.stats .stat:last-child{grid-column:1/-1}}
+.pill{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:2px 9px;font-size:.78rem;font-weight:700;white-space:nowrap}
+.pill.pagato{background:var(--ok-soft);color:var(--ok)}
+.pill.scaduto{background:var(--late-soft);color:var(--late)}
+.pill.corrente{background:var(--due-soft);color:var(--due)}
+.pill.futuro{background:var(--bg);color:var(--muted);border:1px solid var(--line)}
+.pill.esente{background:var(--bg);color:var(--muted)}
+.pill.ecc{background:var(--accent-soft);color:var(--accent)}
+ul.list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+ul.list>li{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:10px 0;border-top:1px solid var(--line);flex-wrap:wrap}
+ul.list>li:first-child{border-top:0;padding-top:0}
+.who{display:flex;flex-direction:column;min-width:0;flex:1}
+.who strong{overflow-wrap:anywhere}
+.msg{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:10px;background:var(--bg)}
+.msg.warn{background:var(--sun-soft)} .msg.info{background:var(--sky-soft)}
+.card>h2,.card>.row>h2{color:var(--accent)}
+.msg p{margin:0;flex:1;min-width:0;overflow-wrap:anywhere}
+.banner{background:var(--sun-soft);color:var(--ink);border-radius:var(--r);padding:12px 14px;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+/* griglia */
+.gridwrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+table.grid{border-collapse:separate;border-spacing:0;width:max-content;min-width:100%}
+.grid th,.grid td{padding:6px;border-bottom:1px solid var(--line);text-align:center;font-size:.85rem}
+.grid thead th{position:sticky;top:0;background:var(--surface);font-weight:700;color:var(--muted)}
+.grid .name{position:sticky;left:0;background:var(--surface);text-align:left;z-index:1;min-width:130px;max-width:170px;border-right:1px solid var(--line)}
+.grid thead .name{z-index:2}
+.grid .name button{all:unset;cursor:pointer;font-weight:700;display:block;overflow-wrap:anywhere}
+.grid .name small{display:block;color:var(--muted);font-weight:400}
+.grid th.now{color:var(--accent)}
+.cell{width:48px;height:44px;border-radius:9px;border:1px solid var(--line);background:var(--bg);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:700;line-height:1.05;padding:0;margin:auto}
+.cell small{font-size:.66rem;font-weight:400}
+.cell.pagato{background:var(--ok-soft);border-color:var(--ok);color:var(--ok)}
+.cell.scaduto{background:var(--late-soft);border-color:var(--late);color:var(--late)}
+.cell.corrente{background:var(--due-soft);border-color:var(--due);color:var(--due)}
+.cell.futuro{color:var(--muted)}
+.cell.esente{background:transparent;border-style:dashed;color:var(--none);cursor:default}
+.cell.ecc{box-shadow:inset 0 -3px 0 var(--accent)}
+.legend{display:flex;gap:6px;flex-wrap:wrap}
+/* scheda bambino */
+.months{display:flex;flex-direction:column}
+.mrow{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.mrow:first-child{border-top:0}
+.mrow .mname{display:flex;flex-direction:column;min-width:0}
+.mrow .amt{text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+.mrow input[type=number]{width:96px}
+.mrow input[type=date]{width:150px;min-height:34px;padding:4px 8px;font-size:.85rem}
+.paybox{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.7rem;color:var(--muted)}
+.paybox input{width:28px;height:28px}
+/* barra schede */
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:5;background:var(--surface);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
+.tab{all:unset;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;padding:9px 4px 10px;font-size:.75rem;font-weight:700;color:var(--muted);position:relative}
+.tab svg{width:24px;height:24px}
+.tab[aria-selected="true"]{color:var(--accent)}
+.tab[aria-selected="true"] svg{background:var(--accent-soft);border-radius:999px;padding:2px 12px;width:48px;box-sizing:content-box;margin-inline:-12px}
+#tab-home[aria-selected="true"]{color:var(--pink)} #tab-home[aria-selected="true"] svg{background:var(--late-soft)}
+#tab-tutti[aria-selected="true"]{color:var(--sky)} #tab-tutti[aria-selected="true"] svg{background:var(--sky-soft)}
+#tab-altro[aria-selected="true"]{color:var(--due)} #tab-altro[aria-selected="true"] svg{background:var(--sun-soft)}
+.tab .badge{position:absolute;top:4px;left:calc(50% + 6px);background:var(--late);color:var(--surface);border-radius:999px;font-size:.65rem;padding:1px 6px}
+dialog{border:1px solid var(--line);border-radius:16px;background:var(--surface);color:var(--ink);padding:0;width:min(520px,calc(100vw - 24px));max-height:calc(100dvh - 40px)}
+.rec{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:6px;align-items:center;padding:4px 0}
+.contact{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:8px 0;border-top:1px solid var(--line)}
+.contact:first-of-type{border-top:0}
+.contact a.btn{text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.allergy{background:var(--late-soft);color:var(--ink);border-radius:10px;padding:10px 12px;margin:0}
+.allergy strong{color:var(--late)}
+.waitem{display:flex;flex-direction:column;gap:8px;padding:12px 0;border-top:1px solid var(--line)}
+.waitem:first-child{border-top:0}
+.waitem .txt{background:var(--bg);border-radius:10px;padding:10px;font-size:.9rem;white-space:pre-wrap;overflow-wrap:anywhere}
+.btn.wa{background:var(--ok);border-color:var(--ok);color:var(--surface);text-decoration:none;display:inline-flex;align-items:center}
+.selrow{display:flex;gap:10px;align-items:center;flex:1 1 240px;min-width:0}
+dialog::backdrop{background:rgba(10,15,15,.45)}
+dialog form{padding:18px;display:flex;flex-direction:column;gap:12px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(76px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);border-radius:12px;padding:10px 14px;display:flex;gap:12px;align-items:center;z-index:20;max-width:calc(100vw - 32px);box-shadow:0 6px 20px rgba(0,0,0,.2)}
+.toast button{all:unset;cursor:pointer;font-weight:700;text-decoration:underline}
+.empty{text-align:center;padding:24px 8px;color:var(--muted)}
+/* riepilogo stampabile */
+#report{position:fixed;inset:0;z-index:30;background:#fff;color:#111;overflow:auto;padding-block:calc(12px + env(safe-area-inset-top,0px)) 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));color-scheme:light}
+#report .bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;position:sticky;top:0;background:#fff;padding-block:6px}
+#report .bar .btn{background:#fff;color:#111;border-color:#ccc}
+#report .bar .btn.primary{background:#3443a3;border-color:#3443a3;color:#fff}
+.rep h2{font-size:1.3rem}
+.rep .meta{color:#555;font-size:.85rem;margin:2px 0 10px}
+.rep .tot{display:flex;gap:18px;flex-wrap:wrap;font-size:.9rem;margin-bottom:10px}
+.rep .tw{overflow-x:auto}
+.rep table{border-collapse:collapse;width:100%;font-size:.72rem}
+.rep th,.rep td{border:1px solid #bbb;padding:3px 4px;text-align:center;vertical-align:middle}
+.rep th{background:#eef0f6}
+.rep td.l,.rep th.l{text-align:left}
+.rep td.p{color:#1f6b3c}
+.rep td.s{color:#a52a17;font-weight:700}
+.rep td.n{color:#999}
+.rep .legend-p{font-size:.72rem;color:#555;margin-top:8px}
+.rep .child{break-inside:avoid;margin-bottom:16px}
+@media print{
+  @page{size:A4 landscape;margin:9mm}
+  body::before{display:none}
+  body>*:not(#report){display:none!important}
+  #report{position:static;padding:0;overflow:visible}
+  #report .bar{display:none}
+  .rep .tw{overflow:visible}
+}
+@media (prefers-reduced-motion:no-preference){.cell,.btn{transition:background-color .15s,border-color .15s}}
+</style>
+
+</head>
+<body>
+<main class="wrap" id="app"></main>
+
+<nav class="tabs" role="tablist" aria-label="Schede">
+  <button class="tab" role="tab" data-tab="home" id="tab-home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg>Home<span class="badge" id="badge" hidden></span></button>
+  <button class="tab" role="tab" data-tab="tutti" id="tab-tutti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v16M15 4v16"/></svg>Tutti</button>
+  <button class="tab" role="tab" data-tab="bambino" id="tab-bambino"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>Bambino</button>
+  <button class="tab" role="tab" data-tab="altro" id="tab-altro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Altro</button>
+</nav>
+
+<dialog id="dlgChild">
+  <form id="formChild">
+    <h2 id="dlgTitle">Nuovo bambino</h2>
+    <label class="f">Nome e cognome<input type="text" id="fNome" required autocomplete="off"></label>
+    <div class="row">
+      <label class="f">Classe<input type="text" id="fClasse" placeholder="es. 3A" autocomplete="off"></label>
+      <label class="f">Quota mensile (€)<input type="number" id="fCosto" min="0" step="0.01" inputmode="decimal" placeholder="automatica"></label>
+    </div>
+    <div class="f"><span class="eyebrow">Servizi</span><div id="fServizi" class="row"></div>
+      <span class="small muted" id="fQuotaAuto"></span></div>
+    <label class="chk"><input type="checkbox" id="fEsente"> Agevolazione: non paga</label>
+    <div class="f"><span class="eyebrow">Recapiti</span><span class="small muted">Il primo recapito è quello usato per i promemoria WhatsApp.</span><div id="fRecapiti" class="months"></div>
+      <button type="button" class="btn" id="fAddRec" style="align-self:flex-start">+ Aggiungi recapito</button></div>
+    <div class="f"><span class="eyebrow">Delegati al ritiro</span><span class="small muted">Persone autorizzate a venire a prendere il bambino.</span><div id="fDelegati" class="months"></div>
+      <button type="button" class="btn" id="fAddDel" style="align-self:flex-start">+ Aggiungi delegato</button></div>
+    <label class="f">Allergie e intolleranze<textarea id="fAllergie" placeholder="es. intollerante al lattosio, allergia alla frutta secca"></textarea></label>
+    <label class="f">Note<textarea id="fNote" placeholder="es. paga il papà, fratello in 1B"></textarea></label>
+    <div class="row spread">
+      <button type="button" class="btn danger" id="fDelete">Elimina</button>
+      <div class="row"><button type="button" class="btn" id="fCancel">Annulla</button><button type="submit" class="btn primary">Salva</button></div>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="dlgWa"><form id="formWa"><div class="row spread"><h2>Promemoria WhatsApp</h2><button type="button" class="btn" id="waClose">Fatto</button></div>
+<p class="small muted" style="margin:0">WhatsApp apre una chat alla volta: tocca “Apri WhatsApp”, premi invio nella chat, poi torna qui per il prossimo.</p>
+<div id="waList" class="months"></div></form></dialog>
+<section id="report" hidden></section>
+<div id="toastHost"></div>
+
+<script>
+(function(){
+const KEY='pagamenti-bambini-v1';
+const MESI=['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+const MSG_DEF='Buongiorno, le ricordiamo che risulta ancora da pagare la retta di {mesi} per {bambino}, per un totale di {importo}. Grazie!';
+const ORDINE=[9,10,11,12,1,2,3,4,5,6,7,8];
+const fmt=new Intl.NumberFormat('it-IT',{style:'currency',currency:'EUR'});
+const eur=n=>fmt.format(+n||0);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>Math.random().toString(36).slice(2,10);
+const pad=n=>String(n).padStart(2,'0');
+const isoOggi=()=>{const d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());};
+const dataIt=iso=>{if(!iso)return'';const[y,m,d]=iso.split('-');return d+'/'+m+'/'+y;};
+const framed=(()=>{try{return window.self!==window.top}catch(e){return true}})();
+const $=s=>document.querySelector(s);
+
+let selWa=new Set();
+let S, tab='home', selId=null, showDates=false, editAmounts=false, filtro='', filtroClasse='';
+
+/* ---------- dati ---------- */
+function annoCorrente(){const n=new Date();return n.getMonth()>=8?n.getFullYear():n.getFullYear()-1;}
+function base(){return{versione:1,annoInizio:annoCorrente(),mesiAttivi:[9,10,11,12,1,2,3,4,5,6],giornoScadenza:10,servizi:[],bambini:[],note:[],ultimoBackup:null,esempio:false,messaggioWa:MSG_DEF};}
+function esempio(){
+  const s=base(); s.esempio=true;
+  s.servizi=[{id:'mensa',nome:'Mensa',costo:60},{id:'dopo',nome:'Doposcuola',costo:80},{id:'pre',nome:'Pre-scuola',costo:25}];
+  const y=s.annoInizio, k=m=>(m>=9?y:y+1)+'-'+pad(m);
+  const B=(nome,classe,serv,extra={})=>Object.assign({id:uid(),nome,classe,servizi:serv,costo:null,esente:false,note:'',allergie:'',recapiti:[],eccezioni:{},pagamenti:{}},extra);
+  const pag=(...mm)=>Object.fromEntries(mm.map(m=>[k(m),{data:(m>=9?y:y+1)+'-'+pad(m)+'-0'+(3+m%5)}]));
+  s.bambini=[
+    B('Giulia Rossi (esempio)','2A',['mensa','dopo'],{pagamenti:pag(9,10),allergie:'Intollerante al lattosio',recapiti:[{nome:'Mamma Laura (esempio)',tel:''},{nome:'Nonno Piero (esempio)',tel:''}],delegati:[{nome:'Zia Carla (esempio)',tel:''}]}),
+    B('Luca Bianchi (esempio)','2A',['mensa'],{pagamenti:pag(9)}),
+    B('Sofia Esposito (esempio)','3B',['mensa','dopo'],{esente:true,note:'Agevolazione comunale'}),
+    B('Matteo Romano (esempio)','3B',['dopo'],{costo:70,note:'Quota ridotta: fratello iscritto',pagamenti:pag(9,10)}),
+    B('Aurora Colombo (esempio)','1A',['mensa','pre'],{eccezioni:{[k(12)]:40},note:'Dicembre: mensa ridotta per le vacanze',pagamenti:pag(9,10)}),
+    B('Leonardo Ricci (esempio)','4C',['mensa','dopo','pre'],{pagamenti:{}}),
+    B('Emma Marino (esempio)','1A',['mensa'],{pagamenti:pag(9,10)}),
+  ];
+  s.note=[{id:uid(),testo:'Esempio di nota: ricordare ai genitori la riunione di venerdì.',data:isoOggi()}];
+  return s;
+}
+function load(){
+  try{const r=localStorage.getItem(KEY);if(r){S=Object.assign(base(),JSON.parse(r));return;}}catch(e){}
+  S=esempio();
+}
+function save(){
+  try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){toast('Non riesco a salvare sul telefono. Fai subito un backup dalla scheda Altro.');}
+}
+try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist();}catch(e){}
+
+function mesi(){return ORDINE.filter(m=>S.mesiAttivi.includes(m)).map(m=>{const y=m>=9?S.annoInizio:S.annoInizio+1;return{m,y,key:y+'-'+pad(m),nome:MESI[m-1],breve:MESI[m-1].slice(0,3)};});}
+function scadenza(mo){const last=new Date(mo.y,mo.m,0).getDate();return new Date(mo.y,mo.m-1,Math.min(S.giornoScadenza,last),23,59,59);}
+function serv(id){return S.servizi.find(s=>s.id===id);}
+function quotaAuto(ids){return ids.reduce((t,id)=>t+(+(serv(id)?.costo)||0),0);}
+function quotaBase(b){return(b.costo!==null&&b.costo!==''&&b.costo!==undefined)?+b.costo:quotaAuto(b.servizi);}
+function hasEcc(b,mo){return b.eccezioni&&b.eccezioni[mo.key]!==undefined&&b.eccezioni[mo.key]!==null;}
+function dovuto(b,mo){if(b.esente)return 0;return hasEcc(b,mo)?+b.eccezioni[mo.key]:quotaBase(b);}
+function stato(b,mo){
+  if(b.pagamenti&&b.pagamenti[mo.key])return'pagato';
+  if(dovuto(b,mo)<=0)return'esente';
+  const oggi=new Date();
+  if(oggi>scadenza(mo))return'scaduto';
+  if(oggi>=new Date(mo.y,mo.m-1,1))return'corrente';
+  return'futuro';
+}
+const ETI={pagato:'Pagato',scaduto:'Scaduto',corrente:'Da pagare',futuro:'Da pagare',esente:'Non dovuto'};
+function ordinati(){return[...S.bambini].sort((a,b)=>a.nome.localeCompare(b.nome,'it'));}
+function meseCorrente(){const n=new Date();return mesi().find(mo=>mo.y===n.getFullYear()&&mo.m===n.getMonth()+1);}
+function recapiti(b){if(Array.isArray(b.recapiti))return b.recapiti;return b.telefono||b.genitore?[{nome:b.genitore||'',tel:b.telefono||''}]:[];}
+function telPrimo(b){const r=recapiti(b).find(x=>x.tel);return r?r.tel:'';}
+function servNomi(b){return b.servizi.map(id=>serv(id)?.nome).filter(Boolean).join(' + ')||'Nessun servizio';}
+function totali(b){let dov=0,pag=0,scad=0;for(const mo of mesi()){const d=dovuto(b,mo),st=stato(b,mo);dov+=d;if(st==='pagato')pag+=d;if(st==='scaduto')scad+=d;}return{dov,pag,res:dov-pag,scad};}
+function scaduti(){const out=[];for(const b of ordinati()){const mm=mesi().filter(mo=>stato(b,mo)==='scaduto');if(mm.length)out.push({b,mm,tot:mm.reduce((t,mo)=>t+dovuto(b,mo),0)});}return out;}
+
+function setPagato(b,mo,val){
+  const prima=b.pagamenti[mo.key]?{...b.pagamenti[mo.key]}:null;
+  if(val)b.pagamenti[mo.key]={data:isoOggi()};else delete b.pagamenti[mo.key];
+  save();render();
+  toast((val?'Pagato: ':'Tolto il pagato: ')+b.nome.replace(' (esempio)','')+', '+mo.nome,()=>{if(prima)b.pagamenti[mo.key]=prima;else delete b.pagamenti[mo.key];save();render();});
+}
+
+/* ---------- interfaccia ---------- */
+let toastT;
+function toast(txt,undo){
+  const h=$('#toastHost');clearTimeout(toastT);
+  h.innerHTML='<div class="toast" role="status"><span>'+esc(txt)+'</span>'+(undo?'<button type="button" id="undo">Annulla</button>':'')+'</div>';
+  if(undo)$('#undo').onclick=()=>{undo();h.innerHTML='';};
+  toastT=setTimeout(()=>h.innerHTML='',undo?6000:3500);
+}
+function head(titolo){return'<header class="top"><h1>'+titolo+'</h1><span class="anno">Anno '+S.annoInizio+'/'+String(S.annoInizio+1).slice(2)+'</span></header>'+
+  (S.esempio?'<div class="banner"><span><strong>Dati di esempio.</strong> Guardali per capire come funziona, poi cancellali e inserisci i bambini veri.</span><button class="btn" data-act="clearEsempio">Cancella esempio</button></div>':'');}
+
+function render(){
+  document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected',t.dataset.tab===tab));
+  const n=scaduti().reduce((t,x)=>t+x.mm.length,0);const bd=$('#badge');bd.hidden=!n;bd.textContent=n;
+  const app=$('#app');
+  app.innerHTML=({home:vHome,tutti:vTutti,bambino:vBambino,altro:vAltro})[tab]();
+  try{localStorage.setItem(KEY+'-tab',tab);}catch(e){}
+}
+
+function vHome(){
+  const sc=scaduti(), mc=meseCorrente();
+  const totScad=sc.reduce((t,x)=>t+x.tot,0);
+  let incM=0,dovM=0,daM=[];
+  if(mc)for(const b of S.bambini){const d=dovuto(b,mc);if(d<=0)continue;dovM+=d;if(stato(b,mc)==='pagato')incM+=d;else daM.push(b);}
+  const msgs=[];
+  if(mc&&daM.length&&stato(daM[0],mc)==='corrente')msgs.push(['warn','Scadenza di '+mc.nome+': il '+Math.min(S.giornoScadenza,new Date(mc.y,mc.m,0).getDate())+' '+mc.nome.toLowerCase()+'. Mancano '+daM.length+' pagamenti.']);
+  if(mc){const ecc=S.bambini.filter(b=>!b.esente&&hasEcc(b,mc));if(ecc.length)msgs.push(['info','Questo mese ci sono importi diversi dal solito per: '+ecc.map(b=>esc(b.nome)+' ('+eur(dovuto(b,mc))+')').join(', ')+'.']);}
+  if(!S.esempio&&S.bambini.length){const gg=S.ultimoBackup?Math.floor((Date.now()-new Date(S.ultimoBackup))/864e5):null;if(gg===null||gg>=30)msgs.push(['warn',(gg===null?'Non hai ancora fatto un backup.':'Ultimo backup '+gg+' giorni fa.')+' I dati sono solo su questo telefono: '+(framed?'il backup si fa dall’app installata.':'<button class="btn ghost" data-act="backup">Fai backup ora</button>')]);}
+  if(!S.bambini.length)msgs.push(['info','Nessun bambino inserito. Vai nella scheda <strong>Bambino</strong> e tocca “Aggiungi bambino”.']);
+  return head('Home')+
+  '<div class="stats"><div class="stat late"><span class="eyebrow">Scaduti</span><b>'+sc.reduce((t,x)=>t+x.mm.length,0)+'</b><span class="small muted">'+eur(totScad)+'</span></div>'+
+  '<div class="stat ok"><span class="eyebrow">'+(mc?esc(mc.nome):'Questo mese')+'</span><b>'+(mc?eur(incM):'–')+'</b><span class="small muted">'+(mc?'incassati su '+eur(dovM):'fuori dall’anno')+'</span></div>'+
+  '<div class="stat"><span class="eyebrow">Iscritti</span><b>'+S.bambini.length+'</b><span class="small muted">'+S.bambini.filter(b=>b.esente).length+' con agevolazione</span></div></div>'+
+  '<section class="card"><div class="row spread"><h2>Pagamenti scaduti</h2><span class="small muted">scadenza il '+S.giornoScadenza+' del mese</span></div>'+
+  (sc.length?'<div class="row spread"><label class="chk small"><input type="checkbox" id="waAll"'+(sc.every(x=>selWa.has(x.b.id))?' checked':'')+'> Seleziona tutti</label><button class="btn wa" data-act="wa"'+(sc.some(x=>selWa.has(x.b.id))?'':' disabled')+'>Invia WhatsApp ('+sc.filter(x=>selWa.has(x.b.id)).length+')</button></div>'+
+   '<ul class="list">'+sc.map(x=>'<li><div class="selrow"><input type="checkbox" data-wasel="'+x.b.id+'"'+(selWa.has(x.b.id)?' checked':'')+' aria-label="Seleziona '+esc(x.b.nome)+'"><div class="who"><strong><button class="btn ghost" style="padding:0;min-height:0" data-open="'+x.b.id+'">'+esc(x.b.nome)+'</button></strong><span class="small muted">'+esc(x.b.classe||'')+' · <strong>'+eur(x.tot)+'</strong> scaduti'+(x.b.promemoria?' · sollecitato il '+dataIt(x.b.promemoria):'')+(telPrimo(x.b)?'':' · manca il telefono')+'</span></div></div><div class="row">'+
+    x.mm.map(mo=>'<button class="btn" data-pay="'+x.b.id+'|'+mo.key+'" title="Segna '+mo.nome+' pagato">✓ '+mo.breve+' '+eur(dovuto(x.b,mo))+'</button>').join('')+'</div></li>').join('')+'</ul><p class="small muted" style="margin:0">Spunta i bambini a cui mandare il promemoria, poi “Invia WhatsApp”. Tocca ✓ su un mese quando lo pagano.</p>'
+   :'<p class="empty">Nessun pagamento scaduto. Tutto in regola.</p>')+'</section>'+
+  (mc&&daM.length?'<section class="card"><h2>Da pagare a '+esc(mc.nome.toLowerCase())+'</h2><ul class="list">'+daM.sort((a,b)=>a.nome.localeCompare(b.nome,'it')).map(b=>'<li><div class="who"><strong>'+esc(b.nome)+'</strong><span class="small muted">'+esc(b.classe||'')+' · '+esc(servNomi(b))+'</span></div><button class="btn" data-pay="'+b.id+'|'+mc.key+'">✓ '+eur(dovuto(b,mc))+'</button></li>').join('')+'</ul></section>':'')+
+  '<section class="card"><h2>Messaggi</h2>'+
+  msgs.map(m=>'<div class="msg '+m[0]+'"><p>'+m[1]+'</p></div>').join('')+
+  S.note.map(n=>'<div class="msg"><p>'+esc(n.testo)+'<br><span class="small muted">'+dataIt(n.data)+'</span></p><button class="btn ghost" data-delnote="'+n.id+'" aria-label="Elimina nota">Elimina</button></div>').join('')+
+  '<form id="formNota" class="row" style="flex-wrap:nowrap"><input type="text" id="nuovaNota" placeholder="Scrivi una nota o un promemoria" autocomplete="off"><button class="btn primary" type="submit">Aggiungi</button></form></section>';
+}
+
+function vTutti(){
+  const mm=mesi(), mc=meseCorrente();
+  const classi=[...new Set(S.bambini.map(b=>b.classe).filter(Boolean))].sort();
+  const lista=ordinati().filter(b=>(!filtro||b.nome.toLowerCase().includes(filtro.toLowerCase()))&&(!filtroClasse||b.classe===filtroClasse));
+  return head('Tutti i bambini')+
+  '<div class="row" style="flex-wrap:nowrap"><input type="search" id="cerca" placeholder="Cerca nome" value="'+esc(filtro)+'"><select id="classe" style="width:auto"><option value="">Tutte le classi</option>'+classi.map(c=>'<option'+(c===filtroClasse?' selected':'')+'>'+esc(c)+'</option>').join('')+'</select></div>'+
+  '<div class="legend"><span class="pill pagato">✓ Pagato</span><span class="pill scaduto">! Scaduto</span><span class="pill corrente">Da pagare</span><span class="pill esente">– Non dovuto</span><span class="pill ecc">Importo diverso</span></div>'+
+  (lista.length?'<div class="gridwrap"><table class="grid"><thead><tr><th class="name">Bambino</th>'+mm.map(mo=>'<th class="'+(mc&&mo.key===mc.key?'now':'')+'">'+mo.breve+'</th>').join('')+'<th>Resta</th></tr></thead><tbody>'+
+  lista.map(b=>'<tr><td class="name"><button data-open="'+b.id+'">'+esc(b.nome)+'</button><small>'+esc(b.classe||'')+(b.esente?' · agevolazione':' · '+eur(quotaBase(b)))+(b.allergie?' · <span style="color:var(--late)">allergie</span>':'')+'</small></td>'+
+    mm.map(mo=>{const st=stato(b,mo),d=dovuto(b,mo),e=hasEcc(b,mo)&&!b.esente;
+      const sym=st==='pagato'?'✓':st==='scaduto'?'!':st==='esente'?'–':'';
+      return'<td><button class="cell '+st+(e?' ecc':'')+'" '+(st==='esente'?'disabled ':'')+'data-pay="'+b.id+'|'+mo.key+'" aria-label="'+esc(b.nome)+', '+mo.nome+': '+ETI[st]+', '+eur(d)+'">'+sym+(d>0?'<small>'+Math.round(d)+'€</small>':'')+'</button></td>';}).join('')+
+    '<td><strong>'+eur(totali(b).res)+'</strong></td></tr>').join('')+'</tbody></table></div>'+
+  '<p class="small muted">Tocca un mese per segnarlo pagato (o toglierlo). Il giorno viene salvato e lo vedi nella scheda del bambino.</p>'
+  :'<p class="empty">Nessun bambino trovato.</p>')+
+  '<div class="row"><button class="btn primary" data-act="report">Riepilogo anno · PDF / stampa</button><button class="btn" data-act="add">Aggiungi bambino</button></div>';
+}
+
+function vBambino(){
+  const lista=ordinati();
+  if(!lista.length)return head('Bambino')+'<section class="card"><p class="empty">Ancora nessun bambino. Aggiungi il primo con il nome, la classe e i servizi a cui è iscritto.</p><button class="btn primary" data-act="add">Aggiungi bambino</button></section>';
+  if(!selId||!S.bambini.find(b=>b.id===selId))selId=lista[0].id;
+  const b=S.bambini.find(x=>x.id===selId), t=totali(b);
+  return head('Bambino')+
+  '<div class="row" style="flex-wrap:nowrap"><select id="selB" aria-label="Scegli bambino">'+lista.map(x=>'<option value="'+x.id+'"'+(x.id===selId?' selected':'')+'>'+esc(x.nome)+(x.classe?' · '+esc(x.classe):'')+'</option>').join('')+'</select><button class="btn" data-act="add">+ Nuovo</button></div>'+
+  '<section class="card"><div class="row spread" style="align-items:flex-start"><div class="who"><h2>'+esc(b.nome)+'</h2><span class="muted">'+(b.classe?'Classe '+esc(b.classe)+' · ':'')+esc(servNomi(b))+'</span></div><button class="btn" data-act="edit">Modifica</button></div>'+
+  '<div class="row">'+(b.esente?'<span class="pill esente">Agevolazione: non paga</span>':'<span class="pill futuro">Quota '+eur(quotaBase(b))+' al mese</span>')+(b.costo!==null&&b.costo!==''&&!b.esente?'<span class="pill ecc">quota personalizzata</span>':'')+'</div>'+
+  (b.allergie?'<p class="allergy"><strong>Allergie e intolleranze:</strong> '+esc(b.allergie)+'</p>':'')+
+  (b.note?'<p class="msg" style="margin:0"><span><strong>Note:</strong> '+esc(b.note)+'</span></p>':'')+
+  '<div class="stats"><div class="stat"><span class="eyebrow">Dovuto anno</span><b>'+eur(t.dov)+'</b></div><div class="stat ok"><span class="eyebrow">Pagato</span><b>'+eur(t.pag)+'</b></div><div class="stat'+(t.scad?' late':'')+'"><span class="eyebrow">'+(t.scad?'Scaduto':'Resta')+'</span><b>'+eur(t.scad||t.res)+'</b></div></div></section>'+
+  '<section class="card"><div class="row spread"><h2>Recapiti</h2><button class="btn ghost" data-act="edit">Modifica</button></div>'+
+  (recapiti(b).length?recapiti(b).map((r,i)=>{const n=telWa(r.tel);return'<div class="contact"><div class="who"><strong>'+esc(r.nome||'Recapito')+'</strong><span class="muted">'+esc(r.tel||'nessun numero')+(i===0&&r.tel?' · promemoria WhatsApp':'')+'</span></div>'+
+    (r.tel?'<div class="row"><a class="btn primary" href="tel:'+esc(String(r.tel).replace(/[^\d+]/g,''))+'">Chiama</a><a class="btn" target="_blank" rel="noopener" href="https://wa.me/'+n+'">WhatsApp</a></div>':'')+'</div>';}).join('')
+   :'<p class="small muted" style="margin:0">Nessun recapito. Tocca Modifica per aggiungere mamma, papà, nonni con il loro numero.</p>')+'</section>'+
+  '<section class="card"><div class="row spread"><h2>Delegati al ritiro</h2><button class="btn ghost" data-act="edit">Modifica</button></div>'+
+  ((b.delegati||[]).length?b.delegati.map(r=>'<div class="contact"><div class="who"><strong>'+esc(r.nome||'Delegato')+'</strong><span class="muted">'+esc(r.tel||'nessun numero')+'</span></div>'+
+    (r.tel?'<div class="row"><a class="btn primary" href="tel:'+esc(String(r.tel).replace(/[^\d+]/g,''))+'">Chiama</a></div>':'')+'</div>').join('')
+   :'<p class="small muted" style="margin:0">Nessun delegato. Tocca Modifica per aggiungere chi può venire a prendere il bambino.</p>')+'</section>'+
+  '<section class="card"><div class="row spread"><h2>Mesi</h2><div class="row"><label class="chk small"><input type="checkbox" id="showDates"'+(showDates?' checked':'')+'> Mostra date</label><label class="chk small"><input type="checkbox" id="editAmt"'+(editAmounts?' checked':'')+'> Cambia importi</label></div></div>'+
+  (editAmounts?'<p class="small muted" style="margin:0">Scrivi un importo solo nei mesi diversi dal solito (es. 0 se in quel mese non paga). Lascia vuoto per la quota normale.</p>':'')+
+  '<div class="months">'+mesi().map(mo=>{const st=stato(b,mo),d=dovuto(b,mo),p=b.pagamenti[mo.key],e=hasEcc(b,mo);
+    return'<div class="mrow"><div class="mname"><strong>'+mo.nome+' '+mo.y+'</strong><span><span class="pill '+st+'">'+ETI[st]+'</span>'+(e&&!b.esente?' <span class="pill ecc">eccezione</span>':'')+'</span>'+
+      (showDates&&p?'<label class="small muted">Pagato il <input type="date" data-date="'+mo.key+'" value="'+p.data+'"></label>':'')+'</div>'+
+      '<div class="amt">'+(editAmounts&&!b.esente?'<input type="number" min="0" step="0.01" inputmode="decimal" data-ecc="'+mo.key+'" value="'+(e?b.eccezioni[mo.key]:'')+'" placeholder="'+quotaBase(b)+'" aria-label="Importo '+mo.nome+'">':'<strong>'+eur(d)+'</strong>')+'</div>'+
+      '<label class="paybox"><input type="checkbox" data-chk="'+mo.key+'"'+(p?' checked':'')+(d<=0&&!p?' disabled':'')+'>pagato</label></div>';}).join('')+'</div></section>'+
+  '<div class="row"><button class="btn primary" data-act="reportOne">Riepilogo di '+esc(b.nome.split(' ')[0])+' · PDF / stampa</button></div>';
+}
+
+function vAltro(){
+  const anni=[];for(let y=annoCorrente()-2;y<=annoCorrente()+1;y++)anni.push(y);
+  return head('Altro')+
+  '<section class="card"><h2>Anno e scadenze</h2><div class="row"><label class="f">Anno scolastico<select id="sAnno">'+anni.map(y=>'<option value="'+y+'"'+(y===S.annoInizio?' selected':'')+'>'+y+'/'+(y+1)+'</option>').join('')+'</select></label>'+
+  '<label class="f">Si paga entro il giorno<input type="number" id="sGiorno" min="1" max="31" value="'+S.giornoScadenza+'"></label></div>'+
+  '<div class="f"><span class="eyebrow">Mesi in cui si paga</span><div class="row">'+ORDINE.map(m=>'<label class="chk small"><input type="checkbox" data-mese="'+m+'"'+(S.mesiAttivi.includes(m)?' checked':'')+'> '+MESI[m-1].slice(0,3)+'</label>').join('')+'</div></div>'+
+  '<p class="small muted" style="margin:0">Quando inizia il nuovo anno basta cambiare l’anno qui: i bambini restano, i mesi ripartono da zero e quelli vecchi restano salvati.</p></section>'+
+  '<section class="card"><h2>Servizi e prezzi</h2><p class="small muted" style="margin:0">La quota di ogni bambino è la somma dei suoi servizi, a meno che tu non scriva una quota personalizzata nella sua scheda.</p>'+
+  '<ul class="list">'+S.servizi.map(s=>'<li><input type="text" data-snome="'+s.id+'" value="'+esc(s.nome)+'" style="flex:2;width:auto" aria-label="Nome servizio"><input type="number" data-scosto="'+s.id+'" value="'+s.costo+'" min="0" step="0.01" inputmode="decimal" style="flex:1;width:auto;max-width:110px" aria-label="Prezzo mensile"><button class="btn ghost" data-delserv="'+s.id+'">Elimina</button></li>').join('')+'</ul>'+
+  '<form id="formServ" class="row" style="flex-wrap:nowrap"><input type="text" id="nsNome" placeholder="Nuovo servizio" autocomplete="off" style="flex:2"><input type="number" id="nsCosto" placeholder="€/mese" min="0" step="0.01" inputmode="decimal" style="flex:1;max-width:110px"><button class="btn primary" type="submit">Aggiungi</button></form></section>'+
+  '<section class="card"><h2>Messaggio WhatsApp</h2><p class="small muted" style="margin:0">Le parole tra graffe vengono sostituite: {bambino}, {genitore}, {mesi}, {importo}.</p>'+
+  '<textarea id="sMsg" rows="4">'+esc(S.messaggioWa)+'</textarea><div class="row"><button class="btn ghost" data-act="msgReset">Ripristina testo originale</button></div></section>'+
+  '<section class="card"><h2>Stampa e backup</h2><div class="row"><button class="btn primary" data-act="report">Riepilogo anno · PDF / stampa</button></div>'+
+  '<p class="small muted" style="margin:0">I dati sono salvati su questo telefono. Il backup crea un file da conservare (in Drive, per email o sul computer) e serve anche per spostare i dati su un altro telefono.'+(S.ultimoBackup?' Ultimo backup: '+dataIt(S.ultimoBackup.slice(0,10))+'.':'')+'</p>'+
+  '<div class="row">'+(framed?'':'<button class="btn" data-act="backup">Scarica backup</button>')+'<label class="btn" for="imp" style="display:inline-flex;align-items:center">Ripristina da backup</label><input type="file" id="imp" accept="application/json,.json" hidden></div>'+
+  (framed?'<p class="small muted" style="margin:0">In questa anteprima scaricare file e stampare non è possibile: funziona nell’app installata.</p>':'')+'</section>'+
+  '<section class="card"><h2>Cancella tutto</h2><p class="small muted" style="margin:0">Elimina bambini, pagamenti e note da questo telefono. Fai prima un backup.</p><div class="row" id="wipeRow"><button class="btn danger" data-act="wipe1">Cancella tutti i dati</button></div></section>';
+}
+
+/* ---------- riepilogo stampabile ---------- */
+function tabellaAnno(lista,oneId){
+  const mm=mesi();
+  return'<div class="tw"><table><thead><tr><th class="l">Bambino</th><th>Classe</th><th class="l">Servizi</th><th>Quota</th>'+mm.map(mo=>'<th>'+mo.breve+'</th>').join('')+'<th>Dovuto</th><th>Pagato</th><th>Resta</th></tr></thead><tbody>'+
+  lista.map(b=>{const t=totali(b);return'<tr><td class="l"><strong>'+esc(b.nome)+'</strong>'+(b.allergie?'<br><span style="color:#a52a17">Allergie: '+esc(b.allergie)+'</span>':'')+(b.note?'<br><span style="color:#666">'+esc(b.note)+'</span>':'')+(oneId&&recapiti(b).length?'<br><span style="color:#444">'+recapiti(b).map(r=>esc(r.nome)+' '+esc(r.tel)).join(' · ')+'</span>':'')+(oneId&&(b.delegati||[]).length?'<br><span style="color:#444">Delegati: '+b.delegati.map(r=>esc(r.nome)+' '+esc(r.tel)).join(' · ')+'</span>':'')+'</td><td>'+esc(b.classe||'')+'</td><td class="l">'+esc(servNomi(b))+'</td><td>'+(b.esente?'Agevolaz.':eur(quotaBase(b)))+'</td>'+
+    mm.map(mo=>{const st=stato(b,mo),d=dovuto(b,mo),p=b.pagamenti[mo.key],e=hasEcc(b,mo)&&!b.esente;
+      if(st==='pagato')return'<td class="p">✓ '+dataIt(p.data).slice(0,5)+(e?'<br>'+eur(d)+'*':'')+'</td>';
+      if(st==='esente')return'<td class="n">–</td>';
+      return'<td class="'+(st==='scaduto'?'s':'')+'">'+(st==='scaduto'?'✗ ':'')+eur(d)+(e?'*':'')+'</td>';}).join('')+
+    '<td>'+eur(t.dov)+'</td><td>'+eur(t.pag)+'</td><td><strong>'+eur(t.res)+'</strong></td></tr>';}).join('')+'</tbody></table></div>';
+}
+function openReport(oneId){
+  const lista=oneId?S.bambini.filter(b=>b.id===oneId):ordinati();
+  let dov=0,pag=0,scad=0;lista.forEach(b=>{const t=totali(b);dov+=t.dov;pag+=t.pag;scad+=t.scad;});
+  const r=$('#report');
+  r.innerHTML='<div class="bar">'+(framed?'':'<button class="btn primary" id="doPrint">Stampa / Salva PDF</button>')+'<button class="btn" id="closeRep">Chiudi</button>'+(framed?'<span style="font-size:.85rem;color:#555;align-self:center">Nell’app installata qui c’è il tasto Stampa / Salva PDF.</span>':'')+'</div>'+
+  '<div class="rep"><h2>'+(oneId?'Pagamenti di '+esc(lista[0].nome):'Pagamenti mensili')+' · anno scolastico '+S.annoInizio+'/'+(S.annoInizio+1)+'</h2>'+
+  '<div class="meta">Aggiornato al '+dataIt(isoOggi())+' · scadenza entro il '+S.giornoScadenza+' di ogni mese · '+lista.length+' '+(lista.length===1?'bambino':'bambini')+'</div>'+
+  '<div class="tot"><span>Dovuto nell’anno: <strong>'+eur(dov)+'</strong></span><span>Pagato: <strong>'+eur(pag)+'</strong></span><span>Ancora da pagare: <strong>'+eur(dov-pag)+'</strong></span><span>Di cui scaduto: <strong style="color:#a52a17">'+eur(scad)+'</strong></span></div>'+
+  tabellaAnno(lista,oneId)+
+  '<p class="legend-p">✓ gg/mm = pagato in quella data · ✗ = scaduto e non pagato · importo senza segno = ancora da pagare · – = non dovuto (agevolazione o importo 0) · * = importo diverso dal solito in quel mese.</p>'+
+  (!oneId&&S.servizi.length?'<p class="legend-p">Servizi: '+S.servizi.map(s=>esc(s.nome)+' '+eur(s.costo)).join(' · ')+'</p>':'')+'</div>';
+  r.hidden=false;
+  $('#closeRep').onclick=()=>{r.hidden=true;r.innerHTML='';};
+  const p=$('#doPrint');if(p)p.onclick=()=>window.print();
+}
+
+/* ---------- scheda bambino: dialog ---------- */
+const dlg=$('#dlgChild');let editId=null;
+function fillServ(sel){
+  $('#fServizi').innerHTML=S.servizi.length?S.servizi.map(s=>'<label class="chk small"><input type="checkbox" value="'+s.id+'"'+(sel.includes(s.id)?' checked':'')+'> '+esc(s.nome)+' ('+eur(s.costo)+')</label>').join(''):'<span class="small muted">Nessun servizio: aggiungili nella scheda Altro.</span>';
+  updAuto();
+}
+function recRow(r){return'<div class="rec"><input type="text" class="rNome" placeholder="es. Mamma Anna" value="'+esc(r.nome||'')+'" aria-label="Nome recapito" autocomplete="off"><input type="tel" class="rTel" inputmode="tel" placeholder="Numero" value="'+esc(r.tel||'')+'" aria-label="Numero di telefono" autocomplete="off"><button type="button" class="btn ghost rDel" aria-label="Togli recapito">✕</button></div>';}
+function fillRec(list,box='#fRecapiti',vuoto=true){$(box).innerHTML=(list.length||!vuoto?list:[{nome:'',tel:''}]).map(recRow).join('');}
+function leggiRec(box='#fRecapiti'){return[...document.querySelectorAll(box+' .rec')].map(r=>({nome:r.querySelector('.rNome').value.trim(),tel:r.querySelector('.rTel').value.trim()})).filter(r=>r.nome||r.tel);}
+$('#fAddRec').onclick=()=>{$('#fRecapiti').insertAdjacentHTML('beforeend',recRow({}));$('#fRecapiti .rec:last-child .rNome').focus();};
+$('#fAddDel').onclick=()=>{$('#fDelegati').insertAdjacentHTML('beforeend',recRow({}));const r=$('#fDelegati .rec:last-child .rNome');r.placeholder='es. Zia Carla';r.focus();};
+['#fRecapiti','#fDelegati'].forEach(id=>$(id).addEventListener('click',e=>{if(e.target.closest('.rDel'))e.target.closest('.rec').remove();}));
+function selServ(){return[...document.querySelectorAll('#fServizi input:checked')].map(i=>i.value);}
+function updAuto(){$('#fQuotaAuto').textContent='Quota automatica dai servizi: '+eur(quotaAuto(selServ()))+'. Scrivi una quota solo se è diversa (es. sconto fratelli).';$('#fCosto').placeholder=quotaAuto(selServ()).toFixed(2).replace('.',',');}
+$('#fServizi').addEventListener('change',updAuto);
+function openChild(id){
+  editId=id;const b=id?S.bambini.find(x=>x.id===id):null;
+  $('#dlgTitle').textContent=b?'Modifica bambino':'Nuovo bambino';
+  $('#fNome').value=b?b.nome:'';$('#fClasse').value=b?b.classe:'';$('#fCosto').value=b&&b.costo!==null?b.costo:'';
+  $('#fEsente').checked=b?b.esente:false;$('#fAllergie').value=b?b.allergie||'':'';fillRec(b?recapiti(b):[]);fillRec(b&&b.delegati?b.delegati:[],'#fDelegati',false);$('#fNote').value=b?b.note:'';
+  fillServ(b?b.servizi:S.servizi.slice(0,1).map(s=>s.id));
+  const del=$('#fDelete');del.hidden=!b;del.textContent='Elimina';del.dataset.armed='';
+  dlg.showModal();
+}
+$('#fCancel').onclick=()=>dlg.close();
+$('#fDelete').onclick=e=>{const d=e.currentTarget;if(!d.dataset.armed){d.dataset.armed='1';d.textContent='Tocca ancora per eliminare';return;}
+  S.bambini=S.bambini.filter(b=>b.id!==editId);selId=null;save();dlg.close();render();toast('Bambino eliminato');};
+$('#formChild').addEventListener('submit',e=>{e.preventDefault();
+  const v=$('#fCosto').value.trim().replace(',','.');
+  const data={nome:$('#fNome').value.trim(),classe:$('#fClasse').value.trim().toUpperCase(),servizi:selServ(),costo:v===''?null:+v,esente:$('#fEsente').checked,allergie:$('#fAllergie').value.trim(),recapiti:leggiRec(),delegati:leggiRec('#fDelegati'),note:$('#fNote').value.trim()};
+  if(!data.nome)return;
+  if(editId){const ob=S.bambini.find(b=>b.id===editId);delete ob.genitore;delete ob.telefono;Object.assign(ob,data);}
+  else{const b=Object.assign({id:uid(),eccezioni:{},pagamenti:{}},data);S.bambini.push(b);selId=b.id;}
+  save();dlg.close();if(!editId)tab='bambino';render();toast(editId?'Modifiche salvate':'Bambino aggiunto');});
+
+/* ---------- WhatsApp ---------- */
+function telWa(t){let d=String(t||'').replace(/[^\d+]/g,'');if(d.startsWith('+'))d=d.slice(1);else if(d.startsWith('00'))d=d.slice(2);else if(/^3\d{8,9}$/.test(d)||/^0\d{5,10}$/.test(d))d='39'+d;return d.replace(/\D/g,'');}
+function elenco(a){return a.length<2?a.join(''):a.slice(0,-1).join(', ')+' e '+a[a.length-1];}
+function testoWa(x){
+  const mm=elenco(x.mm.map(mo=>mo.nome.toLowerCase()+(x.mm.length>1?' ('+eur(dovuto(x.b,mo))+')':'')));
+  return (S.messaggioWa||MSG_DEF).replace(/\{bambino\}/g,x.b.nome).replace(/\{genitore\}/g,(recapiti(x.b)[0]||{}).nome||'').replace(/\{mesi\}/g,mm).replace(/\{importo\}/g,eur(x.tot)).replace(/ ,/g,',').replace(/  +/g,' ');
+}
+function openWa(){
+  const lista=scaduti().filter(x=>selWa.has(x.b.id));
+  $('#waList').innerHTML=lista.map(x=>{const n=telWa(telPrimo(x.b)),txt=testoWa(x),rp=recapiti(x.b).find(r=>r.tel);
+    return'<div class="waitem"><div class="row spread"><strong>'+esc(x.b.nome)+'</strong><span class="small muted">'+eur(x.tot)+'</span></div><div class="txt">'+esc(txt)+'</div>'+
+    (n.length>=8?'<div class="row"><a class="btn wa" target="_blank" rel="noopener" data-wasent="'+x.b.id+'" href="https://wa.me/'+n+'?text='+encodeURIComponent(txt)+'">Apri WhatsApp · '+esc((rp.nome?rp.nome+' ':'')+rp.tel)+'</a><button type="button" class="btn ghost" data-copy="'+x.b.id+'">Copia testo</button></div>'
+     :'<div class="row" style="flex-wrap:nowrap"><input type="tel" inputmode="tel" placeholder="Telefono del genitore" data-waTel="'+x.b.id+'" aria-label="Telefono"><button type="button" class="btn" data-savetel="'+x.b.id+'">Salva</button></div>')+'</div>';}).join('');
+  if(!$('#dlgWa').open)$('#dlgWa').showModal();
+}
+$('#formWa').addEventListener('submit',e=>e.preventDefault());
+$('#waClose').onclick=()=>{$('#dlgWa').close();render();};
+$('#dlgWa').addEventListener('close',()=>render());
+$('#waList').addEventListener('click',e=>{
+  const s=e.target.closest('[data-wasent]');
+  if(s){const b=S.bambini.find(x=>x.id===s.dataset.wasent);b.promemoria=isoOggi();selWa.delete(b.id);save();s.textContent='Aperto ✓ · sollecitato oggi';s.style.opacity='.6';return;}
+  const c=e.target.closest('[data-copy]');
+  if(c){const x=scaduti().find(y=>y.b.id===c.dataset.copy);const t=testoWa(x);
+    navigator.clipboard.writeText(t).then(()=>toast('Testo copiato')).catch(()=>{const el=c.closest('.waitem').querySelector('.txt');const r=document.createRange();r.selectNodeContents(el);const sl=getSelection();sl.removeAllRanges();sl.addRange(r);toast('Testo selezionato: copialo');});return;}
+  const v=e.target.closest('[data-savetel]');
+  if(v){const id=v.dataset.savetel,inp=document.querySelector('[data-watel="'+id+'"]');if(inp&&inp.value.trim()){{const b=S.bambini.find(b=>b.id===id);const rc=recapiti(b).slice();rc.unshift({nome:'Genitore',tel:inp.value.trim()});b.recapiti=rc;delete b.telefono;delete b.genitore;}save();openWa();}}
+});
+
+/* ---------- backup ---------- */
+function backup(){
+  const blob=new Blob([JSON.stringify(S,null,1)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='backup-pagamenti-'+isoOggi()+'.json';
+  document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+  S.ultimoBackup=new Date().toISOString();save();render();toast(framed?'In anteprima il download è bloccato: funziona nell’app installata.':'Backup scaricato. Conservalo in un posto sicuro.');
+}
+function importa(file){
+  const fr=new FileReader();
+  fr.onload=()=>{try{const d=JSON.parse(fr.result);if(!Array.isArray(d.bambini))throw 0;S=Object.assign(base(),d);save();render();toast('Backup ripristinato: '+S.bambini.length+' bambini');}catch(e){toast('Questo file non è un backup dell’app. Scegli il file backup-pagamenti-….json');}};
+  fr.readAsText(file);
+}
+
+/* ---------- eventi ---------- */
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{tab=t.dataset.tab;render();scrollTo(0,0);});
+const app=$('#app');
+app.addEventListener('click',e=>{
+  const t=e.target.closest('[data-pay],[data-open],[data-act],[data-delnote],[data-delserv]');if(!t)return;
+  if(t.dataset.pay){const[id,k]=t.dataset.pay.split('|');const b=S.bambini.find(x=>x.id===id),mo=mesi().find(m=>m.key===k);if(b&&mo)setPagato(b,mo,!b.pagamenti[k]);return;}
+  if(t.dataset.open){selId=t.dataset.open;tab='bambino';render();scrollTo(0,0);return;}
+  if(t.dataset.delnote){S.note=S.note.filter(n=>n.id!==t.dataset.delnote);save();render();return;}
+  if(t.dataset.delserv){const id=t.dataset.delserv;if(S.bambini.some(b=>b.servizi.includes(id))&&!t.dataset.armed){t.dataset.armed='1';t.textContent='Usato da alcuni bambini: tocca ancora';return;}
+    S.servizi=S.servizi.filter(s=>s.id!==id);S.bambini.forEach(b=>b.servizi=b.servizi.filter(x=>x!==id));save();render();return;}
+  const a=t.dataset.act;
+  if(a==='add')openChild(null);
+  else if(a==='edit')openChild(selId);
+  else if(a==='wa')openWa();
+  else if(a==='msgReset'){S.messaggioWa=MSG_DEF;save();render();}
+  else if(a==='report')openReport();
+  else if(a==='reportOne')openReport(selId);
+  else if(a==='backup')backup();
+  else if(a==='clearEsempio'){const sv=S.servizi;S=base();S.servizi=sv;save();selId=null;render();toast('Esempio cancellato. I servizi sono rimasti: controlla i prezzi in Altro.');}
+  else if(a==='wipe1'){$('#wipeRow').innerHTML='<span class="small">Sicuro? Non si può annullare.</span><button class="btn danger" data-act="wipe2">Sì, cancella</button><button class="btn" data-act="wipe0">No</button>';}
+  else if(a==='wipe0')render();
+  else if(a==='wipe2'){S=base();save();selId=null;render();toast('Dati cancellati');}
+});
+app.addEventListener('submit',e=>{e.preventDefault();
+  if(e.target.id==='formNota'){const v=$('#nuovaNota').value.trim();if(v){S.note.unshift({id:uid(),testo:v,data:isoOggi()});save();render();}}
+  if(e.target.id==='formServ'){const n=$('#nsNome').value.trim(),c=+($('#nsCosto').value.replace(',','.')||0);if(n){S.servizi.push({id:uid(),nome:n,costo:c});save();render();}}
+});
+app.addEventListener('input',e=>{const t=e.target;
+  if(t.id==='cerca'){filtro=t.value;const pos=t.selectionStart;render();const c=$('#cerca');c.focus();c.setSelectionRange(pos,pos);}
+});
+app.addEventListener('change',e=>{const t=e.target;const b=S.bambini.find(x=>x.id===selId);
+  if(t.id==='classe'){filtroClasse=t.value;render();}
+  else if(t.dataset.wasel){t.checked?selWa.add(t.dataset.wasel):selWa.delete(t.dataset.wasel);render();}
+  else if(t.id==='waAll'){scaduti().forEach(x=>t.checked?selWa.add(x.b.id):selWa.delete(x.b.id));render();}
+  else if(t.id==='sMsg'){S.messaggioWa=t.value.trim()||MSG_DEF;save();}
+  else if(t.id==='selB'){selId=t.value;render();}
+  else if(t.id==='showDates'){showDates=t.checked;render();}
+  else if(t.id==='editAmt'){editAmounts=t.checked;render();}
+  else if(t.dataset.chk&&b){const mo=mesi().find(m=>m.key===t.dataset.chk);setPagato(b,mo,t.checked);}
+  else if(t.dataset.date&&b){if(t.value){b.pagamenti[t.dataset.date].data=t.value;save();toast('Data aggiornata');}}
+  else if(t.dataset.ecc&&b){const v=t.value.trim().replace(',','.');if(v==='')delete b.eccezioni[t.dataset.ecc];else b.eccezioni[t.dataset.ecc]=+v;save();render();}
+  else if(t.id==='sAnno'){S.annoInizio=+t.value;save();render();}
+  else if(t.id==='sGiorno'){S.giornoScadenza=Math.min(31,Math.max(1,+t.value||10));save();render();}
+  else if(t.dataset.mese){const m=+t.dataset.mese;S.mesiAttivi=t.checked?[...S.mesiAttivi,m]:S.mesiAttivi.filter(x=>x!==m);save();render();}
+  else if(t.dataset.snome){serv(t.dataset.snome).nome=t.value.trim()||'Servizio';save();}
+  else if(t.dataset.scosto){serv(t.dataset.scosto).costo=+t.value.replace(',','.')||0;save();render();}
+  else if(t.id==='imp'&&t.files[0])importa(t.files[0]);
+});
+
+load();
+try{const tb=localStorage.getItem(KEY+'-tab');if(tb)tab=tb;}catch(e){}
+render();
+if('serviceWorker' in navigator&&!framed&&location.protocol==='https:'){navigator.serviceWorker.register('sw.js').catch(()=>{});}
+})();
+</script>
+
+</body>
+</html>
