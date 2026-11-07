@@ -40,7 +40,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 button,input,select,textarea{font:inherit;color:inherit}
 h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.15}
 .wrap{max-width:860px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:16px calc(96px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:16px}
-header.top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;background:linear-gradient(120deg,var(--accent),var(--pink) 60%,var(--sun));color:#fff;border-radius:16px;padding:14px 16px;align-items:center;position:relative;overflow:hidden}
+header.top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;background:linear-gradient(120deg,#6a3fd0,#e2507e 60%,#f2a33a);color:#fff;border-radius:16px;padding:14px 16px;align-items:center;position:relative;overflow:hidden}
 header.top::after{content:"";position:absolute;right:-30px;top:-30px;width:110px;height:110px;border-radius:50%;background:rgba(255,255,255,.18)}
 header.top h1{font-size:1.45rem;color:#fff}
 .anno{color:#fff;font-size:.85rem;font-weight:700;background:rgba(255,255,255,.22);padding:3px 10px;border-radius:999px;position:relative;z-index:1}
@@ -148,6 +148,11 @@ dialog{border:1px solid var(--line);border-radius:16px;background:var(--surface)
 .dsum::-webkit-details-marker{display:none}
 .h2like{font-family:var(--f-display);font-size:1.25rem;color:var(--accent)}
 details[open] .dsum>span:last-child{visibility:hidden}
+.temabtn{all:unset;cursor:pointer;width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.25);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:1.05rem}
+.temabtn:focus-visible{outline:3px solid #fff;outline-offset:2px}
+.seg{display:flex;border:1px solid var(--line);border-radius:999px;padding:3px;gap:3px;background:var(--bg)}
+.seg button{all:unset;cursor:pointer;flex:1;text-align:center;padding:8px 10px;border-radius:999px;font-weight:700;font-size:.9rem;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--surface)}
 dialog::backdrop{background:rgba(10,15,15,.45)}
 dialog form{padding:18px;display:flex;flex-direction:column;gap:12px}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(76px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);border-radius:12px;padding:10px 14px;display:flex;gap:12px;align-items:center;z-index:20;max-width:calc(100vw - 32px);box-shadow:0 6px 20px rgba(0,0,0,.2)}
@@ -409,7 +414,10 @@ function toast(txt,undo){
   if(undo)$('#undo').onclick=()=>{undo();h.innerHTML='';};
   toastT=setTimeout(()=>h.innerHTML='',undo?6000:3500);
 }
-function head(titolo){return'<header class="top"><h1>'+titolo+'</h1><span class="anno">Anno '+S.annoInizio+'/'+String(S.annoInizio+1).slice(2)+'</span></header>'+
+function temaScuro(){const t=temaScelto();return t==='scuro'||(t==='auto'&&matchMedia('(prefers-color-scheme: dark)').matches);}
+function temaScelto(){try{return localStorage.getItem(KEY+'-tema')||'auto'}catch(e){return'auto'}}
+function applicaTema(t){try{localStorage.setItem(KEY+'-tema',t)}catch(e){}const r=document.documentElement;if(t==='auto')delete r.dataset.theme;else r.dataset.theme=t==='scuro'?'dark':'light';}
+function head(titolo){return'<header class="top"><h1>'+titolo+'</h1><div class="row" style="position:relative;z-index:1;flex-wrap:nowrap"><span class="anno">Anno '+S.annoInizio+'/'+String(S.annoInizio+1).slice(2)+'</span><button class="temabtn" data-act="tema" aria-label="'+(temaScuro()?'Passa al tema chiaro':'Passa al tema scuro')+'" title="Tema chiaro o scuro">'+(temaScuro()?'☀︎':'☾')+'</button></div></header>'+
   (S.esempio?'<div class="banner"><span><strong>Dati di esempio.</strong> Guardali per capire come funziona, poi cancellali e inserisci i bambini veri.</span><button class="btn" data-act="clearEsempio">Cancella esempio</button></div>':'');}
 
 function render(){
@@ -522,6 +530,7 @@ function vBambino(){
 function vAltro(){
   const anni=[];for(let y=annoCorrente()-2;y<=annoCorrente()+1;y++)anni.push(y);
   return head('Altro')+
+  '<section class="card"><h2>Tema</h2><div class="seg" role="group" aria-label="Tema">'+[['auto','Automatico'],['chiaro','Chiaro'],['scuro','Scuro']].map(([v,l])=>'<button data-temaset="'+v+'" aria-pressed="'+(temaScelto()===v)+'">'+l+'</button>').join('')+'</div><p class="small muted" style="margin:0">Automatico segue l’impostazione del telefono. In alto in ogni scheda c’è anche il tastino ☾ / ☀︎.</p></section>'+
   '<section class="card"><h2>Anno e scadenze</h2><div class="row"><label class="f">Anno scolastico<select id="sAnno">'+anni.map(y=>'<option value="'+y+'"'+(y===S.annoInizio?' selected':'')+'>'+y+'/'+(y+1)+'</option>').join('')+'</select></label>'+
   '<label class="f">Si paga entro il giorno<input type="number" id="sGiorno" min="1" max="31" value="'+S.giornoScadenza+'"></label></div>'+
   '<div class="f"><span class="eyebrow">Mesi in cui si paga</span><div class="row">'+ORDINE.map(m=>'<label class="chk small"><input type="checkbox" data-mese="'+m+'"'+(S.mesiAttivi.includes(m)?' checked':'')+'> '+MESI[m-1].slice(0,3)+'</label>').join('')+'</div></div>'+
@@ -726,8 +735,9 @@ function importa(file){
 document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{tab=t.dataset.tab;render();scrollTo(0,0);});
 const app=$('#app');
 app.addEventListener('click',e=>{
-  const t=e.target.closest('[data-pay],[data-open],[data-act],[data-delnote],[data-delserv],[data-editcons],[data-gred],[data-grnew],[data-grtog],[data-vedicl]');if(!t)return;
+  const t=e.target.closest('[data-pay],[data-open],[data-act],[data-delnote],[data-delserv],[data-editcons],[data-gred],[data-grnew],[data-grtog],[data-vedicl],[data-temaset]');if(!t)return;
   if(t.dataset.gred){const k=t.dataset.gred,x=k.indexOf('|');openClasse(k.slice(x+1),k.slice(0,x));return;}
+  if(t.dataset.temaset){applicaTema(t.dataset.temaset);render();return;}
   if(t.dataset.grtog){const c=t.dataset.grtog;grAperti.has(c)?grAperti.delete(c):grAperti.add(c);render();return;}
   if(t.dataset.grnew){openClasse(null,t.dataset.grnew);return;}
   if(t.dataset.vedicl){const c=t.dataset.vedicl;clAperte.has(c)?clAperte.delete(c):clAperte.add(c);render();return;}
@@ -741,6 +751,7 @@ app.addEventListener('click',e=>{
   if(a==='add')openChild(null);
   else if(a==='edit')openChild(selId);
   else if(a==='wa')openWa();
+  else if(a==='tema'){applicaTema(temaScuro()?'chiaro':'scuro');render();}
   else if(a==='consegna')openCons(null);
   else if(a==='msgReset'){S.messaggioWa=MSG_DEF;save();render();}
   else if(a==='report')openReport();
@@ -779,6 +790,7 @@ app.addEventListener('change',e=>{const t=e.target;const b=S.bambini.find(x=>x.i
   else if(t.id==='imp'&&t.files[0])importa(t.files[0]);
 });
 
+applicaTema(temaScelto());try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>render());}catch(e){}
 load();migraFratelli();migraDivise();
 try{const tb=localStorage.getItem(KEY+'-tab');if(tb)tab=tb;}catch(e){}
 render();
