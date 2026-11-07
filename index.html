@@ -461,10 +461,11 @@ function vCassa(){
 const GR={classe:{tit:'Classi',uno:'classe',crea:'+ Crea classe',vuoto:'Nessuna classe ancora. Creane una e seleziona i bambini che ne fanno parte.',ph:'es. 3A',lab:'Nome della classe',up:true,pre:'Classe '},
   educatore:{tit:'Educatori',uno:'educatore',crea:'+ Crea educatore',vuoto:'Nessun educatore ancora. Crealo e seleziona i bambini che segue il pomeriggio.',ph:'es. Marica',lab:'Nome dell’educatore',up:false,pre:'Educatore: '}};
 function vGruppi(campo){const g=GR[campo];const cl={};S.bambini.forEach(b=>{if(b[campo])cl[b[campo]]=(cl[b[campo]]||0)+1;});const k=Object.keys(cl).sort((a,b)=>a.localeCompare(b,'it',{numeric:true}));const senza=S.bambini.filter(b=>!b[campo]).length;
-  return'<section class="card"><div class="row spread"><h2>'+g.tit+'</h2><button class="btn primary" data-grnew="'+campo+'">'+g.crea+'</button></div>'+
-  (k.length?'<ul class="list">'+k.map(c=>{const key=campo+'|'+c;return'<li style="display:block"><div class="row spread"><span><strong>'+esc(c)+'</strong> <span class="small muted">'+cl[c]+(cl[c]===1?' bambino':' bambini')+'</span></span><div class="row"><button class="btn ghost" data-vedicl="'+esc(key)+'">'+(clAperte.has(key)?'Nascondi alunni':'Visualizza alunni')+'</button><button class="btn" data-gred="'+esc(key)+'">Modifica</button></div></div>'+
+  const ap=grAperti.has(campo);
+  return'<section class="card"><div class="row spread"><button class="btn ghost" data-grtog="'+campo+'" aria-expanded="'+ap+'" style="padding:0;min-height:0;display:flex;align-items:center;gap:8px"><span style="display:inline-block;transition:transform .15s;transform:rotate('+(ap?90:0)+'deg)">▸</span><h2 style="margin:0">'+g.tit+'</h2><span class="small muted" style="font-weight:400">'+k.length+'</span></button><button class="btn primary" data-grnew="'+campo+'">'+g.crea+'</button></div>'+
+  (!ap?'':(k.length?'<ul class="list">'+k.map(c=>{const key=campo+'|'+c;return'<li style="display:block"><div class="row spread"><span><strong>'+esc(c)+'</strong> <span class="small muted">'+cl[c]+(cl[c]===1?' bambino':' bambini')+'</span></span><div class="row"><button class="btn ghost" data-vedicl="'+esc(key)+'">'+(clAperte.has(key)?'Nascondi alunni':'Visualizza alunni')+'</button><button class="btn" data-gred="'+esc(key)+'">Modifica</button></div></div>'+
     (clAperte.has(key)?'<ol class="small" style="margin:8px 0 0;padding-left:22px;display:flex;flex-direction:column;gap:4px">'+ordinati().filter(x=>x[campo]===c).map(x=>'<li><button class="btn ghost" style="padding:0;min-height:0;font-size:inherit;color:var(--ink);text-align:left" data-open="'+x.id+'">'+esc(x.nome)+'</button></li>').join('')+'</ol>':'')+'</li>';}).join('')+'</ul>':'<p class="small muted" style="margin:0">'+g.vuoto+'</p>')+
-  (senza&&k.length?'<p class="small muted" style="margin:0">'+senza+' bambini senza '+g.uno+'.</p>':'')+'</section>';}
+  (senza&&k.length?'<p class="small muted" style="margin:0">'+senza+' bambini senza '+g.uno+'.</p>':''))+'</section>';}
 function vTutti(){
   const mm=mesi(), mc=meseCorrente();
   const classi=[...new Set(S.bambini.map(b=>b.classe).filter(Boolean))].sort();
@@ -525,7 +526,7 @@ function vAltro(){
   '<label class="f">Si paga entro il giorno<input type="number" id="sGiorno" min="1" max="31" value="'+S.giornoScadenza+'"></label></div>'+
   '<div class="f"><span class="eyebrow">Mesi in cui si paga</span><div class="row">'+ORDINE.map(m=>'<label class="chk small"><input type="checkbox" data-mese="'+m+'"'+(S.mesiAttivi.includes(m)?' checked':'')+'> '+MESI[m-1].slice(0,3)+'</label>').join('')+'</div></div>'+
   '<p class="small muted" style="margin:0">Quando inizia il nuovo anno basta cambiare l’anno qui: i bambini restano, i mesi ripartono da zero e quelli vecchi restano salvati.</p></section>'+
-  vGruppi('classe')+vGruppi('educatore')+
+  vGruppi('educatore')+vGruppi('classe')+
   '<section class="card"><h2>Servizi e prezzi</h2><p class="small muted" style="margin:0">La quota di ogni bambino è la somma dei suoi servizi, a meno che tu non scriva una quota personalizzata nella sua scheda.</p>'+
   '<ul class="list">'+S.servizi.map(s=>'<li><input type="text" data-snome="'+s.id+'" value="'+esc(s.nome)+'" style="flex:2;width:auto" aria-label="Nome servizio"><input type="number" data-scosto="'+s.id+'" value="'+s.costo+'" min="0" step="0.01" inputmode="decimal" style="flex:1;width:auto;max-width:110px" aria-label="Prezzo mensile"><button class="btn ghost" data-delserv="'+s.id+'">Elimina</button></li>').join('')+'</ul>'+
   '<form id="formServ" class="row" style="flex-wrap:nowrap"><input type="text" id="nsNome" placeholder="Nuovo servizio" autocomplete="off" style="flex:2"><input type="number" id="nsCosto" placeholder="€/mese" min="0" step="0.01" inputmode="decimal" style="flex:1;max-width:110px"><button class="btn primary" type="submit">Aggiungi</button></form></section>'+
@@ -655,7 +656,7 @@ $('#formCons').addEventListener('submit',e=>{e.preventDefault();
   save();$('#dlgCons').close();render();toast((consId?'Consegna aggiornata. ':'Consegna registrata: −'+eur(imp)+'. ')+'In cassa: '+eur(saldo()));});
 
 /* ---------- classi ---------- */
-let clAperte=new Set();
+let clAperte=new Set(),grAperti=new Set();
 let clOrig=null,clSel=new Set(),clSoloSenza=false,clCampo='classe';
 function drawClasse(){
   const q=$('#clCerca').value.trim().toLowerCase(),c=clCampo;
@@ -678,7 +679,7 @@ $('#clDelete').onclick=e=>{const d=e.currentTarget,c=clCampo;if(!d.dataset.armed
   S.bambini.forEach(b=>{if(b[c]===clOrig)b[c]='';});save();$('#dlgClasse').close();render();toast('Eliminato');};
 $('#formClasse').addEventListener('submit',e=>{e.preventDefault();const c=clCampo;let n=$('#clNome').value.trim();if(GR[c].up)n=n.toUpperCase();if(!n)return;
   S.bambini.forEach(b=>{if(clSel.has(b.id))b[c]=n;else if(b[c]===clOrig||b[c]===n)b[c]='';});
-  save();$('#dlgClasse').close();render();toast(GR[c].pre+n+' · '+clSel.size+' bambini');});
+  grAperti.add(c);save();$('#dlgClasse').close();render();toast(GR[c].pre+n+' · '+clSel.size+' bambini');});
 
 /* ---------- WhatsApp ---------- */
 function telWa(t){let d=String(t||'').replace(/[^\d+]/g,'');if(d.startsWith('+'))d=d.slice(1);else if(d.startsWith('00'))d=d.slice(2);else if(/^3\d{8,9}$/.test(d)||/^0\d{5,10}$/.test(d))d='39'+d;return d.replace(/\D/g,'');}
@@ -725,8 +726,9 @@ function importa(file){
 document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{tab=t.dataset.tab;render();scrollTo(0,0);});
 const app=$('#app');
 app.addEventListener('click',e=>{
-  const t=e.target.closest('[data-pay],[data-open],[data-act],[data-delnote],[data-delserv],[data-editcons],[data-gred],[data-grnew],[data-vedicl]');if(!t)return;
+  const t=e.target.closest('[data-pay],[data-open],[data-act],[data-delnote],[data-delserv],[data-editcons],[data-gred],[data-grnew],[data-grtog],[data-vedicl]');if(!t)return;
   if(t.dataset.gred){const k=t.dataset.gred,x=k.indexOf('|');openClasse(k.slice(x+1),k.slice(0,x));return;}
+  if(t.dataset.grtog){const c=t.dataset.grtog;grAperti.has(c)?grAperti.delete(c):grAperti.add(c);render();return;}
   if(t.dataset.grnew){openClasse(null,t.dataset.grnew);return;}
   if(t.dataset.vedicl){const c=t.dataset.vedicl;clAperte.has(c)?clAperte.delete(c):clAperte.add(c);render();return;}
   if(t.dataset.editcons){openCons(t.dataset.editcons);return;}
