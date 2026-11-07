@@ -40,9 +40,9 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 button,input,select,textarea{font:inherit;color:inherit}
 h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.15}
 .wrap{max-width:860px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:16px calc(96px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:16px}
-header.top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;background:linear-gradient(120deg,var(--accent),var(--pink) 60%,var(--sun));color:#fff;border-radius:18px;padding:18px 18px 16px;position:relative;overflow:hidden}
+header.top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;background:linear-gradient(120deg,var(--accent),var(--pink) 60%,var(--sun));color:#fff;border-radius:16px;padding:14px 16px;align-items:center;position:relative;overflow:hidden}
 header.top::after{content:"";position:absolute;right:-30px;top:-30px;width:110px;height:110px;border-radius:50%;background:rgba(255,255,255,.18)}
-header.top h1{font-size:1.7rem;color:#fff}
+header.top h1{font-size:1.45rem;color:#fff}
 .anno{color:#fff;font-size:.85rem;font-weight:700;background:rgba(255,255,255,.22);padding:3px 10px;border-radius:999px;position:relative;z-index:1}
 .eyebrow{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:0 2px 0 var(--line);padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
@@ -66,7 +66,7 @@ input[type=checkbox]{width:22px;height:22px;accent-color:var(--accent)}
 .stat{border:0}
 .stats .stat:nth-child(1){background:var(--late-soft)} .stats .stat:nth-child(2){background:var(--ok-soft)} .stats .stat:nth-child(3){background:var(--sky-soft)}
 .stat.late b{color:var(--late)} .stat.ok b{color:var(--ok)}
-@media (max-width:420px){.stats{grid-template-columns:1fr 1fr}.stats .stat:last-child{grid-column:1/-1}}
+@media (max-width:420px){.stats{gap:6px}.stat{padding:10px}.stat b{font-size:1.1rem}.stat .small{font-size:.75rem}.stat .eyebrow{font-size:.66rem}}
 .pill{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:2px 9px;font-size:.78rem;font-weight:700;white-space:nowrap}
 .pill.pagato{background:var(--ok-soft);color:var(--ok)}
 .pill.scaduto{background:var(--late-soft);color:var(--late)}
@@ -142,6 +142,10 @@ dialog{border:1px solid var(--line);border-radius:16px;background:var(--surface)
 .cassa li{flex-wrap:nowrap}.cassa li span{flex:1;min-width:0}
 .cassa{background:linear-gradient(120deg,var(--ok-soft),var(--sky-soft));border:0}
 .cassa b.big{font-family:var(--f-display);font-size:2rem;color:var(--ok);line-height:1}
+.dsum{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.dsum::-webkit-details-marker{display:none}
+.h2like{font-family:var(--f-display);font-size:1.25rem;color:var(--accent)}
+details[open] .dsum>span:last-child{visibility:hidden}
 dialog::backdrop{background:rgba(10,15,15,.45)}
 dialog form{padding:18px;display:flex;flex-direction:column;gap:12px}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(76px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);border-radius:12px;padding:10px 14px;display:flex;gap:12px;align-items:center;z-index:20;max-width:calc(100vw - 32px);box-shadow:0 6px 20px rgba(0,0,0,.2)}
@@ -236,7 +240,7 @@ const KEY='pagamenti-bambini-v1';
 const MESI=['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
 const MSG_DEF='Buongiorno, le ricordiamo che risulta ancora da pagare la retta di {mesi} per {bambino}, per un totale di {importo}. Grazie!';
 const ORDINE=[9,10,11,12,1,2,3,4,5,6,7,8];
-const fmt=new Intl.NumberFormat('it-IT',{style:'currency',currency:'EUR'});
+let fmt;try{fmt=new Intl.NumberFormat('it-IT',{style:'currency',currency:'EUR',useGrouping:'always'});fmt.format(1)}catch(e){fmt=new Intl.NumberFormat('it-IT',{style:'currency',currency:'EUR'});}
 const eur=n=>fmt.format(+n||0);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const uid=()=>Math.random().toString(36).slice(2,10);
@@ -361,7 +365,7 @@ function vHome(){
    '<ul class="list">'+sc.map(x=>'<li><div class="selrow"><input type="checkbox" data-wasel="'+x.b.id+'"'+(selWa.has(x.b.id)?' checked':'')+' aria-label="Seleziona '+esc(x.b.nome)+'"><div class="who"><strong><button class="btn ghost" style="padding:0;min-height:0" data-open="'+x.b.id+'">'+esc(x.b.nome)+'</button></strong><span class="small">'+esc(servNomi(x.b))+(x.b.classe?' · '+esc(x.b.classe):'')+'</span><span class="small" style="color:var(--late)"><strong>Scaduti: '+x.mm.map(mo=>mo.nome.toLowerCase()).join(', ')+' · '+eur(x.tot)+'</strong></span>'+(x.b.promemoria||!telPrimo(x.b)?'<span class="small muted">'+[x.b.promemoria?'sollecitato il '+dataIt(x.b.promemoria):'',telPrimo(x.b)?'':'manca il telefono'].filter(Boolean).join(' · ')+'</span>':'')+'</div></div><div class="row">'+
     x.mm.map(mo=>'<button class="btn" data-pay="'+x.b.id+'|'+mo.key+'" title="Segna '+mo.nome+' pagato">✓ '+mo.breve+' '+eur(dovuto(x.b,mo))+'</button>').join('')+'</div></li>').join('')+'</ul><p class="small muted" style="margin:0">Spunta i bambini a cui mandare il promemoria, poi “Invia WhatsApp”. Tocca ✓ su un mese quando lo pagano.</p>'
    :'<p class="empty">Nessun pagamento scaduto. Tutto in regola.</p>')+'</section>'+
-  (mc&&daM.length?'<section class="card"><h2>Da pagare a '+esc(mc.nome.toLowerCase())+'</h2><ul class="list">'+daM.sort((a,b)=>a.nome.localeCompare(b.nome,'it')).map(b=>'<li><div class="who"><strong>'+esc(b.nome)+'</strong><span class="small muted">'+esc(b.classe||'')+' · '+esc(servNomi(b))+'</span></div><button class="btn" data-pay="'+b.id+'|'+mc.key+'">✓ '+eur(dovuto(b,mc))+'</button></li>').join('')+'</ul></section>':'')+
+  (mc&&daM.length?'<section class="card"><details><summary class="dsum"><span><strong class="h2like">Da pagare a '+esc(mc.nome.toLowerCase())+'</strong><br><span class="small muted">'+daM.length+' bambini · '+eur(daM.reduce((t,b)=>t+dovuto(b,mc),0))+' · entro il '+S.giornoScadenza+'</span></span><span class="small" style="color:var(--accent);font-weight:700">Mostra</span></summary><ul class="list" style="margin-top:12px">'+daM.sort((a,b)=>a.nome.localeCompare(b.nome,'it')).map(b=>'<li><div class="who"><strong>'+esc(b.nome)+'</strong><span class="small muted">'+esc(b.classe||'')+' · '+esc(servNomi(b))+'</span></div><button class="btn" data-pay="'+b.id+'|'+mc.key+'">✓ '+eur(dovuto(b,mc))+'</button></li>').join('')+'</ul></details></section>':'')+
   '<section class="card"><h2>Messaggi</h2>'+
   msgs.map(m=>'<div class="msg '+m[0]+'"><p>'+m[1]+'</p></div>').join('')+
   S.note.map(n=>'<div class="msg"><p>'+esc(n.testo)+'<br><span class="small muted">'+dataIt(n.data)+'</span></p><button class="btn ghost" data-delnote="'+n.id+'" aria-label="Elimina nota">Elimina</button></div>').join('')+
