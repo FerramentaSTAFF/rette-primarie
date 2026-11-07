@@ -197,6 +197,7 @@ dialog form{padding:18px;display:flex;flex-direction:column;gap:12px}
     </div>
     <div class="f"><span class="eyebrow">Servizi</span><div id="fServizi" class="row"></div>
       <span class="small muted" id="fQuotaAuto"></span></div>
+    <label class="f">Paga entro il giorno (vuoto = come tutti)<input type="number" id="fGiorno" min="1" max="31" inputmode="numeric" placeholder="come tutti"></label>
     <label class="f">Dettaglio servizio (giorni, orari)<input type="text" id="fDett" placeholder="es. 3 gg (lun - mer - ven)" autocomplete="off"></label>
     <label class="chk"><input type="checkbox" id="fEsente"> Agevolazione: non paga</label>
     <div class="f"><span class="eyebrow">Recapiti</span><span class="small muted">Il primo recapito è quello usato per i promemoria WhatsApp.</span><div id="fRecapiti" class="months"></div>
@@ -280,7 +281,8 @@ function save(){
 try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist();}catch(e){}
 
 function mesi(){return ORDINE.filter(m=>S.mesiAttivi.includes(m)).map(m=>{const y=m>=9?S.annoInizio:S.annoInizio+1;return{m,y,key:y+'-'+pad(m),nome:MESI[m-1],breve:MESI[m-1].slice(0,3)};});}
-function scadenza(mo){const last=new Date(mo.y,mo.m,0).getDate();return new Date(mo.y,mo.m-1,Math.min(S.giornoScadenza,last),23,59,59);}
+function giornoB(b){return b&&b.giorno?+b.giorno:S.giornoScadenza;}
+function scadenza(mo,b){const last=new Date(mo.y,mo.m,0).getDate();return new Date(mo.y,mo.m-1,Math.min(giornoB(b),last),23,59,59);}
 function serv(id){return S.servizi.find(s=>s.id===id);}
 function quotaAuto(ids){return ids.reduce((t,id)=>t+(+(serv(id)?.costo)||0),0);}
 function quotaBase(b){return(b.costo!==null&&b.costo!==''&&b.costo!==undefined)?+b.costo:quotaAuto(b.servizi);}
@@ -290,7 +292,7 @@ function stato(b,mo){
   if(b.pagamenti&&b.pagamenti[mo.key])return'pagato';
   if(dovuto(b,mo)<=0)return'esente';
   const oggi=new Date();
-  if(oggi>scadenza(mo))return'scaduto';
+  if(oggi>scadenza(mo,b))return'scaduto';
   if(oggi>=new Date(mo.y,mo.m-1,1))return'corrente';
   return'futuro';
 }
@@ -403,7 +405,7 @@ function vBambino(){
   return head('Bambino')+
   '<div class="row" style="flex-wrap:nowrap"><select id="selB" aria-label="Scegli bambino">'+lista.map(x=>'<option value="'+x.id+'"'+(x.id===selId?' selected':'')+'>'+esc(x.nome)+(x.classe?' · '+esc(x.classe):'')+'</option>').join('')+'</select><button class="btn" data-act="add">+ Nuovo</button></div>'+
   '<section class="card"><div class="row spread" style="align-items:flex-start"><div class="who"><h2>'+esc(b.nome)+'</h2><span class="muted">'+(b.classe?'Classe '+esc(b.classe)+' · ':'')+esc(servNomi(b))+'</span></div><button class="btn" data-act="edit">Modifica</button></div>'+
-  '<div class="row">'+(b.esente?'<span class="pill esente">Agevolazione: non paga</span>':'<span class="pill futuro">Quota '+eur(quotaBase(b))+' al mese</span>')+(b.costo!==null&&b.costo!==''&&!b.esente?'<span class="pill ecc">quota personalizzata</span>':'')+'</div>'+
+  '<div class="row">'+(b.esente?'<span class="pill esente">Agevolazione: non paga</span>':'<span class="pill futuro">Quota '+eur(quotaBase(b))+' al mese</span>')+(b.giorno&&!b.esente?'<span class="pill ecc">paga entro il '+b.giorno+'</span>':'')+(b.costo!==null&&b.costo!==''&&!b.esente?'<span class="pill ecc">quota personalizzata</span>':'')+'</div>'+
   (b.allergie?'<p class="allergy"><strong>Allergie e intolleranze:</strong> '+esc(b.allergie)+'</p>':'')+
   (b.note?'<p class="msg" style="margin:0"><span><strong>Note:</strong> '+esc(b.note)+'</span></p>':'')+
   '<div class="stats"><div class="stat"><span class="eyebrow">Dovuto anno</span><b>'+eur(t.dov)+'</b></div><div class="stat ok"><span class="eyebrow">Pagato</span><b>'+eur(t.pag)+'</b></div><div class="stat'+(t.scad?' late':'')+'"><span class="eyebrow">'+(t.scad?'Scaduto':'Resta')+'</span><b>'+eur(t.scad||t.res)+'</b></div></div></section>'+
@@ -490,7 +492,7 @@ function openChild(id){
   editId=id;const b=id?S.bambini.find(x=>x.id===id):null;
   $('#dlgTitle').textContent=b?'Modifica bambino':'Nuovo bambino';
   $('#fNome').value=b?b.nome:'';$('#fClasse').value=b?b.classe:'';$('#fCosto').value=b&&b.costo!==null?b.costo:'';
-  $('#fEsente').checked=b?b.esente:false;$('#fAllergie').value=b?b.allergie||'':'';$('#fDett').value=b?b.dettaglio||'':'';fillRec(b?recapiti(b):[]);fillRec(b&&b.delegati?b.delegati:[],'#fDelegati',false);$('#fNote').value=b?b.note:'';
+  $('#fEsente').checked=b?b.esente:false;$('#fAllergie').value=b?b.allergie||'':'';$('#fDett').value=b?b.dettaglio||'':'';$('#fGiorno').value=b&&b.giorno?b.giorno:'';$('#fGiorno').placeholder='come tutti: '+S.giornoScadenza;fillRec(b?recapiti(b):[]);fillRec(b&&b.delegati?b.delegati:[],'#fDelegati',false);$('#fNote').value=b?b.note:'';
   fillServ(b?b.servizi:S.servizi.slice(0,1).map(s=>s.id));
   const del=$('#fDelete');del.hidden=!b;del.textContent='Elimina';del.dataset.armed='';
   dlg.showModal();
@@ -500,7 +502,7 @@ $('#fDelete').onclick=e=>{const d=e.currentTarget;if(!d.dataset.armed){d.dataset
   S.bambini=S.bambini.filter(b=>b.id!==editId);selId=null;save();dlg.close();render();toast('Bambino eliminato');};
 $('#formChild').addEventListener('submit',e=>{e.preventDefault();
   const v=$('#fCosto').value.trim().replace(',','.');
-  const data={nome:$('#fNome').value.trim(),classe:$('#fClasse').value.trim().toUpperCase(),servizi:selServ(),costo:v===''?null:+v,esente:$('#fEsente').checked,allergie:$('#fAllergie').value.trim(),dettaglio:$('#fDett').value.trim(),recapiti:leggiRec(),delegati:leggiRec('#fDelegati'),note:$('#fNote').value.trim()};
+  const data={nome:$('#fNome').value.trim(),classe:$('#fClasse').value.trim().toUpperCase(),servizi:selServ(),costo:v===''?null:+v,esente:$('#fEsente').checked,allergie:$('#fAllergie').value.trim(),dettaglio:$('#fDett').value.trim(),giorno:(+$('#fGiorno').value>=1&&+$('#fGiorno').value<=31)?+$('#fGiorno').value:null,recapiti:leggiRec(),delegati:leggiRec('#fDelegati'),note:$('#fNote').value.trim()};
   if(!data.nome)return;
   if(editId){const ob=S.bambini.find(b=>b.id===editId);delete ob.genitore;delete ob.telefono;Object.assign(ob,data);}
   else{const b=Object.assign({id:uid(),eccezioni:{},pagamenti:{}},data);S.bambini.push(b);selId=b.id;}
